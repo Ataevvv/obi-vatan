@@ -100,7 +100,7 @@ if (BOT_TOKEN && BOT_TOKEN !== 'YOUR_BOT_TOKEN') {
 
       // В тему "Личка с ботом" — кнопка "Доставлен"
       bot.sendMessage(CHAT_ID,
-        `🚚 *${driverName} — в пути*\n━━━━━━━━━━━━━━━━\n👤 ${order.name}\n📞 ${order.phone}\n📍 ${order.address}\n💧 ${bottles.join(' + ')}\n⏰ ${order.deliveryTime}\n💰 *${order.total} сомон*\n━━━━━━━━━━━━━━━━`,
+        `🚚 *${driverName} — в пути*\n━━━━━━━━━━━━━━━━\n👤 ${order.name}\n📞 ${order.phone}\n📍 ${order.address}\n💧 ${bottles.join(' + ')}\n💰 *${order.total} сомон*\n━━━━━━━━━━━━━━━━`,
         {
           parse_mode: 'Markdown',
           message_thread_id: TOPIC_DM,
@@ -114,7 +114,7 @@ if (BOT_TOKEN && BOT_TOKEN !== 'YOUR_BOT_TOKEN') {
       }).catch(err => console.error(`❌ topic error: ${err.message}`));
 
       // SMS клиенту
-      sendSms(order.phone, `Оби Ватан: Ваш заказ принят! Водитель выехал к вам. Ожидайте доставку ${order.deliveryTime}.`);
+      sendSms(order.phone, `Оби Ватан: Ваш заказ принят! Водитель уже едет к вам.`);
 
     } else if (action === 'delivered' && order.status === 'delivering') {
 
@@ -247,7 +247,6 @@ ${driverLine}
 ━━━━━━━━━━━━━━━━━━
 ${bottles.join('\n')}
 ━━━━━━━━━━━━━━━━━━
-⏰ *Время доставки:* ${order.deliveryTime}
 💰 *Итого: ${order.total} сомон*${order.freeBottle ? '\n🎁 *БОНУС: 1×6Л бесплатно (10-й заказ!)*' : ''}${order.notes ? `\n💬 ${order.notes}` : ''}`;
 
   // Новые заказы → General (без message_thread_id = дефолтная тема)
