@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 100" width="300" height="100">
+  <defs>
+    <linearGradient id="dropGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#1a78c2;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#0d4f8a;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="waveGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#1a78c2;stop-opacity:0.8" />
+      <stop offset="100%" style="stop-color:#48b4e0;stop-opacity:0.8" />
+    </linearGradient>
+  </defs>
+
+  <!-- Water drop icon -->
+  <g transform="translate(10, 8)">
+    <path d="M37 5 C37 5 18 28 18 45 C18 56.6 26.4 66 37 66 C47.6 66 56 56.6 56 45 C56 28 37 5 37 5 Z"
+          fill="url(#dropGrad)" />
+    <!-- shine on drop -->
+    <ellipse cx="28" cy="38" rx="5" ry="8" fill="white" opacity="0.3" transform="rotate(-20 28 38)" />
+    <!-- wave inside drop -->
+    <path d="M20 50 Q28 44 37 50 Q46 56 54 50" fill="none" stroke="white" stroke-width="2" opacity="0.5" />
+  </g>
+
+  <!-- Company name -->
+  <text x="80" y="42" font-family="Arial, sans-serif" font-size="28" font-weight="bold" fill="#0d4f8a" letter-spacing="1">ОБИ</text>
+  <text x="80" y="72" font-family="Arial, sans-serif" font-size="28" font-weight="bold" fill="#1a78c2" letter-spacing="1">ВАТАН</text>
+
+  <!-- Tagline -->
+  <text x="82" y="88" font-family="Arial, sans-serif" font-size="10" fill="#48b4e0" letter-spacing="2">ТОЗА ОБИ ЗИНДАГӢ</text>
+</svg>

@@ -1,0 +1,528 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Оби Ватан — Чистая горная вода</title>
+  <link rel="stylesheet" href="style.css"/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet"/>
+  <link rel="manifest" href="/manifest.json"/>
+  <meta name="theme-color" content="#1a78c2"/>
+  <meta name="mobile-web-app-capable" content="yes"/>
+  <meta name="apple-mobile-web-app-capable" content="yes"/>
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+  <meta name="apple-mobile-web-app-title" content="Оби Ватан"/>
+  <link rel="apple-touch-icon" href="/logo.png"/>
+</head>
+<body>
+
+<!-- GLOBAL VIDEO BACKGROUND -->
+<video class="bg-video" autoplay muted loop playsinline>
+  <source src="/media/1.mp4" type="video/mp4"/>
+</video>
+<div class="bg-overlay"></div>
+
+<!-- CANVAS КАПЛИ -->
+<canvas id="dropsCanvas" class="drops-canvas"></canvas>
+
+<!-- HEADER -->
+<header class="header" id="header">
+  <div class="container hdr">
+    <img src="logo.png" alt="Оби Ватан" class="logo"/>
+    <nav>
+      <a href="#products">Продукты</a>
+      <a href="#how">Как заказать</a>
+      <a href="#order">Контакты</a>
+    </nav>
+    <a href="#order" class="btn-nav">Заказать воду</a>
+  </div>
+</header>
+
+<!-- HERO -->
+<section class="hero" id="hero">
+  <div class="water-canvas" id="waterCanvas"></div>
+  <div class="hero-waves">
+    <svg viewBox="0 0 1440 120" preserveAspectRatio="none" class="wave w1">
+      <path d="M0,60 C240,100 480,20 720,60 C960,100 1200,20 1440,60 L1440,120 L0,120Z" fill="rgba(255,255,255,0.04)"/>
+    </svg>
+    <svg viewBox="0 0 1440 120" preserveAspectRatio="none" class="wave w2">
+      <path d="M0,40 C360,90 720,10 1080,50 C1260,70 1380,30 1440,40 L1440,120 L0,120Z" fill="rgba(255,255,255,0.06)"/>
+    </svg>
+    <svg viewBox="0 0 1440 80" preserveAspectRatio="none" class="wave w3">
+      <path d="M0,50 C180,20 360,70 540,40 C720,10 900,60 1080,40 C1260,20 1380,50 1440,30 L1440,80 L0,80Z" fill="rgba(255,255,255,0.05)"/>
+    </svg>
+  </div>
+
+  <div class="container hero-inner">
+    <!-- Text -->
+    <div class="hero-text">
+
+      <div class="hero-tag">
+        <span class="htag-dot"></span>
+        Худжанд · 08:00 – 17:00
+      </div>
+
+      <h1>
+        Оби Ватан
+        <em>Закажи воду онлайн</em>
+      </h1>
+
+      <p>Чистая вода · Привезём за пару часов</p>
+
+      <div class="hero-btns">
+        <a href="#order" class="btn-primary-hero">
+          <span>Заказать сейчас</span>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+        </a>
+      </div>
+
+      <div class="hero-prices">
+        <div class="hp-card">
+          <div class="hp-vol">6 Л</div>
+          <div class="hp-price">7 <span>сомон</span></div>
+        </div>
+        <div class="hp-divider"></div>
+        <div class="hp-card">
+          <div class="hp-vol">16 Л</div>
+          <div class="hp-price">25 <span>сомон</span></div>
+        </div>
+        <div class="hp-divider"></div>
+        <div class="hp-card">
+          <div class="hp-vol">📞</div>
+          <div class="hp-price" style="font-size:1rem;letter-spacing:0">92 792 11 11</div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Bottle Visual -->
+    <div class="hero-visual">
+      <div class="bottle-glow"></div>
+      <div class="bottle-float">
+        <!-- 16L Bottle SVG -->
+        <svg viewBox="0 0 160 310" xmlns="http://www.w3.org/2000/svg" class="bottle-svg b16">
+          <defs>
+            <linearGradient id="plGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+              <stop offset="0%" stop-color="#89cff0" stop-opacity="0.5"/>
+              <stop offset="15%" stop-color="#d0eeff" stop-opacity="0.8"/>
+              <stop offset="50%" stop-color="#edf7ff" stop-opacity="0.95"/>
+              <stop offset="85%" stop-color="#b8e0f7" stop-opacity="0.75"/>
+              <stop offset="100%" stop-color="#7abde0" stop-opacity="0.55"/>
+            </linearGradient>
+            <linearGradient id="wGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+              <stop offset="0%" stop-color="#1a78c2" stop-opacity="0.55"/>
+              <stop offset="100%" stop-color="#0d4070" stop-opacity="0.85"/>
+            </linearGradient>
+            <linearGradient id="capGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+              <stop offset="0%" stop-color="#2196f3"/>
+              <stop offset="100%" stop-color="#0d47a1"/>
+            </linearGradient>
+            <linearGradient id="shineGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+              <stop offset="0%" stop-color="white" stop-opacity="0.45"/>
+              <stop offset="100%" stop-color="white" stop-opacity="0"/>
+            </linearGradient>
+            <clipPath id="bodyClip16">
+              <rect x="18" y="58" width="124" height="236" rx="16"/>
+            </clipPath>
+          </defs>
+          <!-- Cap -->
+          <rect x="55" y="0" width="50" height="22" rx="8" fill="url(#capGrad)"/>
+          <rect x="52" y="18" width="56" height="10" rx="5" fill="#0d47a1"/>
+          <!-- Neck -->
+          <rect x="44" y="28" width="72" height="32" rx="8" fill="url(#plGrad)" stroke="#90caf9" stroke-width="1"/>
+          <!-- Shoulder -->
+          <path d="M18,64 Q44,58 80,58 Q116,58 142,64" stroke="#90caf9" stroke-width="1" fill="none"/>
+          <!-- Body -->
+          <rect x="18" y="58" width="124" height="236" rx="16" fill="url(#plGrad)" stroke="#90caf9" stroke-width="1.5"/>
+          <!-- Water fill -->
+          <g clip-path="url(#bodyClip16)">
+            <rect x="18" y="168" width="124" height="126" fill="url(#wGrad)"/>
+            <path d="M18,168 Q44,160 80,168 Q116,176 142,168" stroke="rgba(255,255,255,0.4)" stroke-width="2" fill="none"/>
+            <!-- Caustic bubbles in water -->
+            <circle cx="40" cy="200" r="3" fill="rgba(255,255,255,0.15)"/>
+            <circle cx="95" cy="220" r="2" fill="rgba(255,255,255,0.12)"/>
+            <circle cx="120" cy="245" r="4" fill="rgba(255,255,255,0.1)"/>
+            <circle cx="55" cy="255" r="2.5" fill="rgba(255,255,255,0.13)"/>
+          </g>
+          <!-- Label -->
+          <rect x="26" y="80" width="108" height="100" rx="10" fill="white" opacity="0.93"/>
+          <rect x="26" y="80" width="108" height="100" rx="10" fill="none" stroke="#1a78c2" stroke-width="1.5"/>
+          <!-- Label text -->
+          <text x="80" y="118" text-anchor="middle" fill="#0d47a1" font-family="Inter,sans-serif" font-size="20" font-weight="900" letter-spacing="-0.5">ОБИ</text>
+          <text x="80" y="142" text-anchor="middle" fill="#1a78c2" font-family="Inter,sans-serif" font-size="20" font-weight="900" letter-spacing="-0.5">ВАТАН</text>
+          <text x="80" y="158" text-anchor="middle" fill="#888" font-family="Inter,sans-serif" font-size="8.5" font-weight="600" letter-spacing="1.5">ГОРНАЯ ВОДА</text>
+          <!-- 16L badge -->
+          <rect x="34" y="164" width="92" height="24" rx="7" fill="#1a78c2"/>
+          <text x="80" y="180" text-anchor="middle" fill="white" font-family="Inter,sans-serif" font-size="12" font-weight="800">16 ЛИТРОВ · 25 СОМОН</text>
+          <!-- Shine -->
+          <rect x="26" y="60" width="18" height="230" rx="9" fill="url(#shineGrad)"/>
+          <!-- Ribs -->
+          <line x1="18" y1="240" x2="142" y2="240" stroke="rgba(0,100,200,0.12)" stroke-width="2.5"/>
+          <line x1="18" y1="258" x2="142" y2="258" stroke="rgba(0,100,200,0.1)" stroke-width="2"/>
+          <line x1="18" y1="276" x2="142" y2="276" stroke="rgba(0,100,200,0.08)" stroke-width="1.5"/>
+        </svg>
+
+        <!-- 6L Bottle -->
+        <svg viewBox="0 0 100 200" xmlns="http://www.w3.org/2000/svg" class="bottle-svg b6">
+          <defs>
+            <linearGradient id="pl6" x1="0%" y1="0%" x2="100%" y2="0%">
+              <stop offset="0%" stop-color="#89cff0" stop-opacity="0.5"/>
+              <stop offset="50%" stop-color="#edf7ff" stop-opacity="0.9"/>
+              <stop offset="100%" stop-color="#7abde0" stop-opacity="0.55"/>
+            </linearGradient>
+            <linearGradient id="w6" x1="0%" y1="0%" x2="0%" y2="100%">
+              <stop offset="0%" stop-color="#1a78c2" stop-opacity="0.5"/>
+              <stop offset="100%" stop-color="#0d4070" stop-opacity="0.8"/>
+            </linearGradient>
+            <clipPath id="bodyClip6">
+              <rect x="12" y="40" width="76" height="152" rx="12"/>
+            </clipPath>
+          </defs>
+          <rect x="34" y="0" width="32" height="16" rx="6" fill="url(#capGrad)"/>
+          <rect x="32" y="12" width="36" height="8" rx="4" fill="#0d47a1"/>
+          <rect x="24" y="20" width="52" height="22" rx="6" fill="url(#pl6)" stroke="#90caf9" stroke-width="1"/>
+          <rect x="12" y="40" width="76" height="152" rx="12" fill="url(#pl6)" stroke="#90caf9" stroke-width="1.5"/>
+          <g clip-path="url(#bodyClip6)">
+            <rect x="12" y="116" width="76" height="76" fill="url(#w6)"/>
+            <path d="M12,116 Q30,109 50,116 Q70,123 88,116" stroke="rgba(255,255,255,0.35)" stroke-width="1.5" fill="none"/>
+          </g>
+          <rect x="18" y="54" width="64" height="70" rx="8" fill="white" opacity="0.92"/>
+          <rect x="18" y="54" width="64" height="70" rx="8" fill="none" stroke="#1a78c2" stroke-width="1"/>
+          <text x="50" y="82" text-anchor="middle" fill="#0d47a1" font-family="Inter,sans-serif" font-size="13" font-weight="900">ОБИ</text>
+          <text x="50" y="98" text-anchor="middle" fill="#1a78c2" font-family="Inter,sans-serif" font-size="13" font-weight="900">ВАТАН</text>
+          <text x="50" y="112" text-anchor="middle" fill="#888" font-family="Inter,sans-serif" font-size="6.5" font-weight="600" letter-spacing="1">ГОРНАЯ ВОДА</text>
+          <rect x="20" y="116" width="60" height="16" rx="5" fill="#1a78c2"/>
+          <text x="50" y="127" text-anchor="middle" fill="white" font-family="Inter,sans-serif" font-size="8" font-weight="800">6 Л · 7 СОМОН</text>
+          <rect x="16" y="42" width="12" height="146" rx="6" fill="url(#shineGrad)"/>
+        </svg>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PRODUCTS -->
+<section class="products" id="products">
+  <div class="container">
+    <div class="sec-hd">
+      <span class="sec-pill">Наша продукция</span>
+      <h2>Чистая вода в любом формате</h2>
+      <p>Выберите подходящий объём для вашей семьи или бизнеса</p>
+    </div>
+
+    <div class="prod-grid">
+
+      <!-- 6L -->
+      <div class="pcard">
+        <div class="pcard-visual v1">
+          <svg viewBox="0 0 100 200" xmlns="http://www.w3.org/2000/svg" width="90">
+            <defs>
+              <linearGradient id="pp6" x1="0%" y1="0%" x2="100%" y2="0%">
+                <stop offset="0%" stop-color="#60a8d8" stop-opacity="0.4"/>
+                <stop offset="50%" stop-color="#d0eeff" stop-opacity="0.9"/>
+                <stop offset="100%" stop-color="#60a8d8" stop-opacity="0.4"/>
+              </linearGradient>
+              <clipPath id="pc6"><rect x="12" y="40" width="76" height="152" rx="12"/></clipPath>
+            </defs>
+            <rect x="34" y="0" width="32" height="16" rx="6" fill="#1565c0"/>
+            <rect x="32" y="12" width="36" height="8" rx="4" fill="#0d47a1"/>
+            <rect x="24" y="20" width="52" height="22" rx="6" fill="url(#pp6)" stroke="#90caf9" stroke-width="1"/>
+            <rect x="12" y="40" width="76" height="152" rx="12" fill="url(#pp6)" stroke="#90caf9" stroke-width="1.5"/>
+            <g clip-path="url(#pc6)">
+              <rect x="12" y="120" width="76" height="72" fill="#1a78c2" opacity="0.45"/>
+              <path d="M12,120 Q30,112 50,120 Q70,128 88,120" stroke="rgba(255,255,255,0.5)" stroke-width="1.5" fill="none"/>
+            </g>
+            <rect x="18" y="55" width="64" height="68" rx="8" fill="white" opacity="0.92"/>
+            <text x="50" y="83" text-anchor="middle" fill="#0d47a1" font-family="Inter,sans-serif" font-size="13" font-weight="900">ОБИ</text>
+            <text x="50" y="100" text-anchor="middle" fill="#1a78c2" font-family="Inter,sans-serif" font-size="13" font-weight="900">ВАТАН</text>
+            <text x="50" y="113" text-anchor="middle" fill="#999" font-family="Inter,sans-serif" font-size="6" font-weight="600" letter-spacing="1">ГОРНАЯ ВОДА</text>
+            <rect x="22" y="117" width="56" height="14" rx="4" fill="#1a78c2"/>
+            <text x="50" y="127" text-anchor="middle" fill="white" font-family="Inter,sans-serif" font-size="7" font-weight="800">6 ЛИТРОВ</text>
+            <rect x="18" y="42" width="10" height="146" rx="5" fill="white" opacity="0.25"/>
+          </svg>
+        </div>
+        <div class="pcard-body">
+          <h3>6-литровая бутыль</h3>
+          <p>Идеальна для небольшой семьи или офиса. Лёгкая, удобная для переноски и замены.</p>
+          <ul class="pcard-list">
+            <li>Вес около 6 кг</li>
+            <li>Подходит для кулера</li>
+            <li>Удобная ручка</li>
+          </ul>
+          <div class="pcard-footer">
+            <div class="pcard-price">7 <span>сомон</span></div>
+            <a href="#order" class="pcard-btn">Заказать</a>
+          </div>
+        </div>
+      </div>
+
+      <!-- 16L -->
+      <div class="pcard featured">
+        <div class="pcard-badge">Популярный выбор</div>
+        <div class="pcard-visual v2">
+          <svg viewBox="0 0 140 270" xmlns="http://www.w3.org/2000/svg" width="115">
+            <defs>
+              <linearGradient id="pp16" x1="0%" y1="0%" x2="100%" y2="0%">
+                <stop offset="0%" stop-color="#60a8d8" stop-opacity="0.4"/>
+                <stop offset="50%" stop-color="#d0eeff" stop-opacity="0.92"/>
+                <stop offset="100%" stop-color="#60a8d8" stop-opacity="0.4"/>
+              </linearGradient>
+              <linearGradient id="pw16" x1="0%" y1="0%" x2="0%" y2="100%">
+                <stop offset="0%" stop-color="#1a78c2" stop-opacity="0.6"/>
+                <stop offset="100%" stop-color="#0a3d6b" stop-opacity="0.9"/>
+              </linearGradient>
+              <clipPath id="pc16"><rect x="14" y="54" width="112" height="210" rx="16"/></clipPath>
+            </defs>
+            <rect x="48" y="0" width="44" height="20" rx="8" fill="#1565c0"/>
+            <rect x="46" y="16" width="48" height="10" rx="5" fill="#0d47a1"/>
+            <rect x="36" y="26" width="68" height="30" rx="8" fill="url(#pp16)" stroke="#90caf9" stroke-width="1"/>
+            <rect x="14" y="54" width="112" height="210" rx="16" fill="url(#pp16)" stroke="#90caf9" stroke-width="1.5"/>
+            <g clip-path="url(#pc16)">
+              <rect x="14" y="160" width="112" height="104" fill="url(#pw16)"/>
+              <path d="M14,160 Q40,150 70,160 Q100,170 126,160" stroke="rgba(255,255,255,0.4)" stroke-width="2" fill="none"/>
+              <circle cx="35" cy="185" r="3" fill="rgba(255,255,255,0.12)"/>
+              <circle cx="88" cy="200" r="2" fill="rgba(255,255,255,0.1)"/>
+              <circle cx="108" cy="220" r="3.5" fill="rgba(255,255,255,0.09)"/>
+            </g>
+            <rect x="22" y="74" width="96" height="96" rx="10" fill="white" opacity="0.93"/>
+            <rect x="22" y="74" width="96" height="96" rx="10" fill="none" stroke="#1a78c2" stroke-width="1.5"/>
+            <text x="70" y="112" text-anchor="middle" fill="#0d47a1" font-family="Inter,sans-serif" font-size="19" font-weight="900">ОБИ</text>
+            <text x="70" y="135" text-anchor="middle" fill="#1a78c2" font-family="Inter,sans-serif" font-size="19" font-weight="900">ВАТАН</text>
+            <text x="70" y="152" text-anchor="middle" fill="#999" font-family="Inter,sans-serif" font-size="8" font-weight="600" letter-spacing="1.2">ГОРНАЯ ВОДА</text>
+            <rect x="28" y="158" width="84" height="22" rx="7" fill="#1a78c2"/>
+            <text x="70" y="173" text-anchor="middle" fill="white" font-family="Inter,sans-serif" font-size="11" font-weight="800">16 ЛИТРОВ · 25 СОМОН</text>
+            <rect x="22" y="56" width="16" height="206" rx="8" fill="white" opacity="0.22"/>
+            <line x1="14" y1="224" x2="126" y2="224" stroke="rgba(0,100,200,0.1)" stroke-width="2.5"/>
+            <line x1="14" y1="240" x2="126" y2="240" stroke="rgba(0,100,200,0.08)" stroke-width="2"/>
+          </svg>
+        </div>
+        <div class="pcard-body">
+          <h3>16-литровая бутыль</h3>
+          <p>Оптимальный выбор для семьи. Дольше хватает — выгоднее по цене за каждый литр.</p>
+          <ul class="pcard-list">
+            <li>Всего 1.56 сомон за литр</li>
+            <li>Идеально для кулера</li>
+            <li>Хватает на 1–2 недели</li>
+          </ul>
+          <div class="pcard-footer">
+            <div class="pcard-price featured-price">25 <span>сомон</span></div>
+            <a href="#order" class="pcard-btn featured-btn">Заказать</a>
+          </div>
+        </div>
+      </div>
+
+      <!-- COOLER -->
+      <div class="pcard">
+        <div class="pcard-visual v3">
+          <!-- Water Cooler SVG -->
+          <svg viewBox="0 0 130 240" xmlns="http://www.w3.org/2000/svg" width="110">
+            <defs>
+              <linearGradient id="clrGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+                <stop offset="0%" stop-color="#b0cce8"/>
+                <stop offset="50%" stop-color="#ddeeff"/>
+                <stop offset="100%" stop-color="#a0c0e0"/>
+              </linearGradient>
+              <linearGradient id="bottleTopGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+                <stop offset="0%" stop-color="#7ab8e0" stop-opacity="0.5"/>
+                <stop offset="50%" stop-color="#c8e8ff" stop-opacity="0.85"/>
+                <stop offset="100%" stop-color="#7ab8e0" stop-opacity="0.5"/>
+              </linearGradient>
+            </defs>
+
+            <!-- Inverted bottle on top -->
+            <rect x="44" y="0" width="42" height="52" rx="10" fill="url(#bottleTopGrad)" stroke="#90caf9" stroke-width="1.5"/>
+            <rect x="50" y="48" width="30" height="12" rx="5" fill="#1565c0"/>
+            <rect x="55" y="0" width="8" height="12" rx="4" fill="rgba(255,255,255,0.3)"/>
+            <!-- Water in inverted bottle -->
+            <rect x="44" y="0" width="42" height="38" rx="10" fill="#1a78c2" opacity="0.25"/>
+            <text x="65" y="30" text-anchor="middle" fill="#0d47a1" font-family="Inter,sans-serif" font-size="9" font-weight="800">16Л</text>
+
+            <!-- Cooler body -->
+            <rect x="10" y="60" width="110" height="158" rx="14" fill="url(#clrGrad)" stroke="#a0c0d8" stroke-width="1.5"/>
+            <!-- Front panel -->
+            <rect x="18" y="75" width="94" height="110" rx="10" fill="#e0eef8"/>
+            <!-- Display screen -->
+            <rect x="26" y="82" width="50" height="26" rx="6" fill="#0d2a4a"/>
+            <text x="51" y="98" text-anchor="middle" fill="#00d4ff" font-family="Inter,sans-serif" font-size="8" font-weight="700">ОБИ ВАТАН</text>
+            <!-- Hot indicator -->
+            <circle cx="88" cy="95" r="10" fill="#ff4444" opacity="0.8"/>
+            <text x="88" y="99" text-anchor="middle" fill="white" font-family="Inter,sans-serif" font-size="8" font-weight="800">H</text>
+            <!-- Buttons -->
+            <rect x="26" y="116" width="78" height="20" rx="6" fill="#c8ddf0"/>
+            <circle cx="40" cy="126" r="6" fill="#1a78c2"/>
+            <circle cx="60" cy="126" r="6" fill="#4db6ac"/>
+            <circle cx="80" cy="126" r="6" fill="#ff7043"/>
+            <text x="40" y="129.5" text-anchor="middle" fill="white" font-family="sans-serif" font-size="6" font-weight="700">C</text>
+            <text x="60" y="129.5" text-anchor="middle" fill="white" font-family="sans-serif" font-size="6" font-weight="700">N</text>
+            <text x="80" y="129.5" text-anchor="middle" fill="white" font-family="sans-serif" font-size="6" font-weight="700">H</text>
+            <!-- Taps -->
+            <rect x="34" y="144" width="20" height="28" rx="6" fill="#1a78c2"/>
+            <rect x="34" y="164" width="20" height="10" rx="4" fill="#0d47a1"/>
+            <text x="44" y="156" text-anchor="middle" fill="white" font-family="sans-serif" font-size="7" font-weight="700">❄</text>
+            <rect x="76" y="144" width="20" height="28" rx="6" fill="#e53935"/>
+            <rect x="76" y="164" width="20" height="10" rx="4" fill="#b71c1c"/>
+            <text x="86" y="156" text-anchor="middle" fill="white" font-family="sans-serif" font-size="7" font-weight="700">♨</text>
+            <!-- Drip tray -->
+            <rect x="18" y="190" width="94" height="12" rx="4" fill="#c0d8ec"/>
+            <line x1="26" y1="190" x2="26" y2="202" stroke="#a0c0d8" stroke-width="1"/>
+            <line x1="40" y1="190" x2="40" y2="202" stroke="#a0c0d8" stroke-width="1"/>
+            <line x1="54" y1="190" x2="54" y2="202" stroke="#a0c0d8" stroke-width="1"/>
+            <line x1="68" y1="190" x2="68" y2="202" stroke="#a0c0d8" stroke-width="1"/>
+            <line x1="82" y1="190" x2="82" y2="202" stroke="#a0c0d8" stroke-width="1"/>
+            <line x1="96" y1="190" x2="96" y2="202" stroke="#a0c0d8" stroke-width="1"/>
+            <!-- Base legs -->
+            <rect x="22" y="218" width="28" height="22" rx="5" fill="#b0c8e0"/>
+            <rect x="80" y="218" width="28" height="22" rx="5" fill="#b0c8e0"/>
+            <!-- Shine -->
+            <rect x="16" y="62" width="12" height="154" rx="6" fill="white" opacity="0.2"/>
+          </svg>
+        </div>
+        <div class="pcard-body">
+          <h3>Кулер для воды</h3>
+          <p>Наша 16-литровая бутыль идеально подходит для любого кулера. Холодная и горячая вода всегда под рукой.</p>
+          <ul class="pcard-list">
+            <li>Подходит 16Л бутыль</li>
+            <li>Горячая и холодная вода</li>
+            <li>Для дома и офиса</li>
+          </ul>
+          <div class="pcard-footer">
+            <div class="pcard-note">Совместима с вашим кулером</div>
+            <a href="#order" class="pcard-btn">Заказать воду</a>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- WHY -->
+<section class="why-sec">
+  <div class="container why-inner">
+    <div class="why-left">
+      <span class="sec-pill light">Почему Оби Ватан</span>
+      <h2>Качество, которому<br/>доверяют тысячи</h2>
+      <p>Мы доставляем чистую горную воду жителям города. Каждая бутыль проходит контроль качества перед доставкой.</p>
+      <a href="#order" class="btn-why">Сделать заказ</a>
+    </div>
+    <div class="why-right">
+      <div class="why-card"><span class="wc-ico">💧</span><div><h4>Чистая горная вода</h4><p>Многоступенчатая фильтрация и постоянный контроль качества</p></div></div>
+      <div class="why-card"><span class="wc-ico">🚚</span><div><h4>Доставка в день заказа</h4><p>Оформите заказ до 15:00 — привезём сегодня же</p></div></div>
+      <div class="why-card"><span class="wc-ico">📱</span><div><h4>SMS уведомление</h4><p>Получите SMS как только водитель выедет к вам</p></div></div>
+      <div class="why-card"><span class="wc-ico">💰</span><div><h4>Честная цена</h4><p>6Л — 7 сомон, 16Л — 25 сомон. Без скрытых платежей</p></div></div>
+    </div>
+  </div>
+</section>
+
+<!-- HOW -->
+<section class="how-sec" id="how">
+  <div class="container">
+    <div class="sec-hd center">
+      <span class="sec-pill">Как заказать</span>
+      <h2>Три простых шага</h2>
+    </div>
+    <div class="how-steps">
+      <div class="how-step"><div class="hsn">01</div><h4>Заполните форму</h4><p>Укажите имя, телефон, адрес и выберите нужное количество бутылей</p></div>
+      <div class="how-arrow">→</div>
+      <div class="how-step"><div class="hsn">02</div><h4>Водитель принимает</h4><p>Водитель берёт ваш заказ и вам приходит SMS с подтверждением</p></div>
+      <div class="how-arrow">→</div>
+      <div class="how-step"><div class="hsn">03</div><h4>Получите воду</h4><p>Свежая вода доставлена прямо к вашей двери в выбранное время</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- ORDER -->
+<section class="order-sec" id="order">
+  <div class="container">
+    <div class="order-wrap">
+      <div class="order-left">
+        <span class="sec-pill">Оформить заказ</span>
+        <h2>Закажите воду<br/>прямо сейчас</h2>
+        <p>Заполните форму — оператор и водитель получат ваш заказ мгновенно</p>
+        <div class="order-tags">
+          <span>📞 <a href="tel:+992927921111" style="color:inherit;text-decoration:none;font-weight:700">92 792 11 11</a></span>
+          <span>⏰ 08:00 – 17:00</span>
+          <span>🫙 6Л — 7 сомон</span>
+          <span>🫙 16Л — 25 сомон</span>
+          <span>📱 SMS после принятия</span>
+        </div>
+      </div>
+
+      <form class="order-form" id="orderForm">
+        <div class="f2">
+          <div class="fg"><label>Имя *</label><input type="text" id="name" placeholder="Ваше имя" required/></div>
+          <div class="fg"><label>Телефон *</label><input type="tel" id="phone" placeholder="+992 XX XXX XXXX" required/></div>
+        </div>
+        <div class="fg"><label>Адрес доставки *</label><input type="text" id="address" placeholder="Улица, дом, квартира" required/></div>
+        <div class="fg">
+          <label>Время доставки</label>
+          <div class="time-slots">
+            <label class="ts"><input type="radio" name="time" value="08:00–10:00" checked/><span>08–10</span></label>
+            <label class="ts"><input type="radio" name="time" value="10:00–12:00"/><span>10–12</span></label>
+            <label class="ts"><input type="radio" name="time" value="12:00–14:00"/><span>12–14</span></label>
+            <label class="ts"><input type="radio" name="time" value="14:00–16:00"/><span>14–16</span></label>
+            <label class="ts"><input type="radio" name="time" value="16:00–17:00"/><span>16–17</span></label>
+          </div>
+        </div>
+        <div class="qty-section">
+          <div class="qty-row">
+            <div><div class="qr-name">6-литровая</div><div class="qr-price">7 сомон / шт</div></div>
+            <div class="qr-ctrl">
+              <button type="button" class="qbtn" onclick="changeQty('qty6',-1)">−</button>
+              <span class="qval" id="qty6">0</span>
+              <button type="button" class="qbtn" onclick="changeQty('qty6',1)">+</button>
+            </div>
+          </div>
+          <div class="qty-row">
+            <div><div class="qr-name">16-литровая</div><div class="qr-price">25 сомон / шт</div></div>
+            <div class="qr-ctrl">
+              <button type="button" class="qbtn" onclick="changeQty('qty16',-1)">−</button>
+              <span class="qval" id="qty16">0</span>
+              <button type="button" class="qbtn" onclick="changeQty('qty16',1)">+</button>
+            </div>
+          </div>
+        </div>
+        <div class="fg"><label>Комментарий</label><textarea id="notes" rows="2" placeholder="Дополнительные пожелания..."></textarea></div>
+        <div class="total-bar"><span>Итого к оплате</span><strong id="totalPrice">0 сомон</strong></div>
+        <button type="submit" class="btn-submit" id="submitBtn"><span id="btnText">Отправить заказ</span></button>
+      </form>
+    </div>
+  </div>
+</section>
+
+<!-- SUCCESS -->
+<div class="overlay" id="successOverlay">
+  <div class="success-box">
+    <div class="sb-icon">
+      <svg viewBox="0 0 64 64" fill="none" width="72">
+        <circle cx="32" cy="32" r="30" stroke="#1a78c2" stroke-width="2.5" class="sr"/>
+        <path d="M18 32L28 43L46 22" stroke="#1a78c2" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" class="sc"/>
+      </svg>
+    </div>
+    <h3>Заказ принят!</h3>
+    <p>Ваш заказ передан оператору</p>
+    <div class="sb-details" id="sbDetails"></div>
+    <div class="sb-note">📱 SMS придёт на ваш номер после того, как водитель примет заказ</div>
+    <button class="btn-nav full-btn" onclick="closeSuccess()">Отлично, спасибо!</button>
+  </div>
+</div>
+
+<!-- FOOTER -->
+<footer class="footer">
+  <div class="container footer-inner">
+    <div>
+      <img src="logo.png" alt="Оби Ватан" class="footer-logo"/>
+      <p>Чистая горная вода с доставкой на дом</p>
+    </div>
+    <div class="footer-links">
+      <a href="tel:+992927921111" class="footer-phone">☎️ 92 792 11 11</a>
+      <span>⏰ 08:00 – 17:00</span>
+      <span>🚚 Доставка по городу</span>
+      <span>💧 Горная вода</span>
+    </div>
+  </div>
+  <div class="footer-copy"><div class="container">© 2025 Оби Ватан · Все права защищены</div></div>
+</footer>
+
+<script src="script.js"></script>
+</body>
+</html>
