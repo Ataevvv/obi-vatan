@@ -13,6 +13,9 @@ app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
 app.use('/media', express.static(path.join(__dirname, 'image')));
 
+const DATA_DIR = path.join(__dirname, 'data');
+if (!fs.existsSync(DATA_DIR)) fs.mkdirSync(DATA_DIR, { recursive: true });
+
 const ORDERS_FILE = path.join(__dirname, 'data', 'orders.json');
 const CLIENTS_FILE = path.join(__dirname, 'data', 'clients.json');
 const BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN;
