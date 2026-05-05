@@ -1,53 +1,57 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
   <defs>
     <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#0f1f3d"/>
-      <stop offset="100%" stop-color="#1a3a6e"/>
+      <stop offset="0%" stop-color="#1a0a3e"/>
+      <stop offset="100%" stop-color="#2d1566"/>
     </linearGradient>
-    <linearGradient id="accent" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#00c9ff"/>
-      <stop offset="100%" stop-color="#0077cc"/>
+    <linearGradient id="shield-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#7c3aed"/>
+      <stop offset="100%" stop-color="#4f1fc8"/>
     </linearGradient>
-    <linearGradient id="bar1" x1="0%" y1="0%" x2="0%" y2="100%">
-      <stop offset="0%" stop-color="#00d4ff"/>
-      <stop offset="100%" stop-color="#0088cc"/>
+    <linearGradient id="key-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#fbbf24"/>
+      <stop offset="100%" stop-color="#f59e0b"/>
     </linearGradient>
-    <linearGradient id="bar2" x1="0%" y1="0%" x2="0%" y2="100%">
-      <stop offset="0%" stop-color="#00ffbb"/>
-      <stop offset="100%" stop-color="#00aa88"/>
-    </linearGradient>
-    <linearGradient id="bar3" x1="0%" y1="0%" x2="0%" y2="100%">
-      <stop offset="0%" stop-color="#7eb8ff"/>
-      <stop offset="100%" stop-color="#3366cc"/>
-    </linearGradient>
+    <filter id="glow">
+      <feGaussianBlur stdDeviation="6" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
   </defs>
 
   <!-- Background -->
   <rect width="512" height="512" rx="100" fill="url(#bg)"/>
 
-  <!-- Subtle grid lines -->
-  <line x1="80" y1="200" x2="432" y2="200" stroke="rgba(255,255,255,0.05)" stroke-width="1"/>
-  <line x1="80" y1="280" x2="432" y2="280" stroke="rgba(255,255,255,0.05)" stroke-width="1"/>
-  <line x1="80" y1="360" x2="432" y2="360" stroke="rgba(255,255,255,0.05)" stroke-width="1"/>
+  <!-- Subtle dots pattern -->
+  <circle cx="100" cy="100" r="2" fill="rgba(255,255,255,0.06)"/>
+  <circle cx="200" cy="80" r="2" fill="rgba(255,255,255,0.06)"/>
+  <circle cx="320" cy="100" r="2" fill="rgba(255,255,255,0.06)"/>
+  <circle cx="420" cy="80" r="2" fill="rgba(255,255,255,0.06)"/>
+  <circle cx="80" cy="200" r="2" fill="rgba(255,255,255,0.06)"/>
+  <circle cx="430" cy="200" r="2" fill="rgba(255,255,255,0.06)"/>
+  <circle cx="100" cy="400" r="2" fill="rgba(255,255,255,0.06)"/>
+  <circle cx="410" cy="420" r="2" fill="rgba(255,255,255,0.06)"/>
 
-  <!-- Chart bars -->
-  <rect x="108" y="250" width="70" height="130" rx="10" fill="url(#bar3)" opacity="0.9"/>
-  <rect x="221" y="180" width="70" height="200" rx="10" fill="url(#bar1)" opacity="0.95"/>
-  <rect x="334" y="210" width="70" height="170" rx="10" fill="url(#bar2)" opacity="0.9"/>
+  <!-- Shield body -->
+  <path d="M256 78 L370 122 L370 248 C370 316 320 368 256 395 C192 368 142 316 142 248 L142 122 Z"
+        fill="url(#shield-grad)" filter="url(#glow)" opacity="0.95"/>
 
-  <!-- Trend line -->
-  <polyline points="143,245 256,172 369,202" fill="none" stroke="#ffffff" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" opacity="0.6"/>
-  <circle cx="143" cy="245" r="9" fill="#ffffff" opacity="0.8"/>
-  <circle cx="256" cy="172" r="9" fill="#00d4ff"/>
-  <circle cx="369" cy="202" r="9" fill="#ffffff" opacity="0.8"/>
+  <!-- Shield inner highlight -->
+  <path d="M256 100 L352 138 L352 248 C352 306 310 350 256 374 C202 350 160 306 160 248 L160 138 Z"
+        fill="none" stroke="rgba(255,255,255,0.15)" stroke-width="2"/>
 
-  <!-- Bottom axis line -->
-  <line x1="80" y1="390" x2="432" y2="390" stroke="rgba(255,255,255,0.18)" stroke-width="2"/>
+  <!-- Shield shine -->
+  <ellipse cx="210" cy="165" rx="28" ry="50" fill="rgba(255,255,255,0.08)" transform="rotate(-15 210 165)"/>
 
-  <!-- Top label: ADMIN -->
-  <rect x="156" y="90" width="200" height="46" rx="23" fill="rgba(0,180,255,0.15)" stroke="rgba(0,200,255,0.4)" stroke-width="1.5"/>
-  <text x="256" y="121" text-anchor="middle" font-family="Arial,sans-serif" font-size="22" font-weight="800" fill="#00d4ff" letter-spacing="5">ADMIN</text>
+  <!-- Key circle (top) -->
+  <circle cx="256" cy="218" r="44" fill="none" stroke="url(#key-grad)" stroke-width="16"/>
+  <circle cx="256" cy="218" r="26" fill="none" stroke="rgba(251,191,36,0.3)" stroke-width="6"/>
+
+  <!-- Key shaft -->
+  <rect x="244" y="258" width="24" height="72" rx="6" fill="url(#key-grad)"/>
+  <!-- Key teeth -->
+  <rect x="268" y="282" width="16" height="12" rx="3" fill="url(#key-grad)"/>
+  <rect x="268" y="304" width="12" height="10" rx="3" fill="url(#key-grad)"/>
 
   <!-- Bottom label -->
-  <text x="256" y="468" text-anchor="middle" font-family="Arial,sans-serif" font-size="34" font-weight="900" fill="rgba(255,255,255,0.35)" letter-spacing="2">ОБИ ВАТАН</text>
+  <text x="256" y="470" text-anchor="middle" font-family="Arial,sans-serif" font-size="34" font-weight="900" fill="rgba(255,255,255,0.30)" letter-spacing="2">ОБИ ВАТАН</text>
 </svg>
