@@ -178,7 +178,6 @@ document.getElementById('orderForm').addEventListener('submit', async function (
     return;
   }
 
-  const deliveryTime = document.querySelector('input[name="time"]:checked').value;
   const name = document.getElementById('name').value.trim();
   const phone = document.getElementById('phone').value.trim();
   const address = document.getElementById('address').value.trim();
@@ -193,12 +192,12 @@ document.getElementById('orderForm').addEventListener('submit', async function (
     const res = await fetch('/api/orders', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ name, phone, address, qty6: qty.qty6, qty16: qty.qty16, deliveryTime, notes, total })
+      body: JSON.stringify({ name, phone, address, qty6: qty.qty6, qty16: qty.qty16, notes, total })
     });
 
     if (res.ok) {
       localStorage.setItem('obiVatanClient', JSON.stringify({ name, phone, address }));
-      showSuccess({ name, phone, address, qty6: qty.qty6, qty16: qty.qty16, deliveryTime, total });
+      showSuccess({ name, phone, address, qty6: qty.qty6, qty16: qty.qty16, total });
       this.reset();
       qty.qty6 = 0; qty.qty16 = 0;
       document.getElementById('qty6').textContent = 0;
@@ -225,7 +224,6 @@ function showSuccess(data) {
     <div><strong>Телефон:</strong> ${data.phone}</div>
     <div><strong>Адрес:</strong> ${data.address}</div>
     <div><strong>Заказ:</strong> ${bottles.join(', ')}</div>
-    <div><strong>Время доставки:</strong> ${data.deliveryTime}</div>
     <div><strong>Итого:</strong> ${data.total} сомон</div>
   `;
   document.getElementById('successOverlay').classList.add('active');
