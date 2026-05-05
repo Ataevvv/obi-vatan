@@ -1,10 +1,12 @@
-const CACHE = 'obiVatan-v1';
+const CACHE = 'obiVatan-v2';
 const ASSETS = [
   '/',
   '/style.css',
   '/script.js',
   '/logo.png',
-  '/manifest.json'
+  '/manifest.json',
+  '/icon-app-192.png',
+  '/icon-app-512.png'
 ];
 
 self.addEventListener('install', e => {
