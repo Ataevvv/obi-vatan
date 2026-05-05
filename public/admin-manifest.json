@@ -1,0 +1,32 @@
+{
+  "name": "Оби Ватан — Администратор",
+  "short_name": "ОВ Админ",
+  "description": "Панель управления заказами Оби Ватан",
+  "start_url": "/admin.html",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#0f1f3d",
+  "theme_color": "#00c9ff",
+  "lang": "ru",
+  "icons": [
+    {
+      "src": "/icon-admin.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "/logo.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/logo.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["productivity", "utilities"]
+}

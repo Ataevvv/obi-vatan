@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#003d8a"/>
+      <stop offset="100%" stop-color="#0099cc"/>
+    </linearGradient>
+    <linearGradient id="drop" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#ffffff" stop-opacity="1"/>
+      <stop offset="100%" stop-color="#a8e8ff" stop-opacity="0.9"/>
+    </linearGradient>
+  </defs>
+  <!-- Background -->
+  <rect width="512" height="512" rx="100" fill="url(#bg)"/>
+  <!-- Water drop -->
+  <path d="M256 100 C256 100 150 240 150 310 C150 368 198 410 256 410 C314 410 362 368 362 310 C362 240 256 100 256 100Z" fill="url(#drop)" opacity="0.95"/>
+  <!-- Shine -->
+  <ellipse cx="222" cy="260" rx="22" ry="40" fill="white" opacity="0.35" transform="rotate(-20 222 260)"/>
+  <!-- Text -->
+  <text x="256" y="490" text-anchor="middle" font-family="Arial,sans-serif" font-size="52" font-weight="900" fill="white" opacity="0.5" letter-spacing="4">ОБИ ВАТАН</text>
+</svg>
