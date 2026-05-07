@@ -123,25 +123,23 @@ nav a:hover{color:#fff}
   display:block;font-size:2rem;font-weight:700;margin-top:4px;
 }
 .hero-features{
-  display:flex;align-items:center;flex-wrap:wrap;gap:10px;
+  display:flex;align-items:center;flex-wrap:wrap;gap:12px;
   margin-bottom:30px;
 }
 .hf-item{
-  display:flex;align-items:center;gap:7px;
-  color:rgba(255,255,255,.8);font-size:.88rem;font-weight:500;
+  display:flex;align-items:center;gap:6px;
+  color:rgba(255,255,255,.75);font-size:.85rem;font-weight:500;
 }
-.hf-dot{
-  width:7px;height:7px;border-radius:50%;flex-shrink:0;
+.hf-free{
+  background:rgba(74,222,128,.12);
+  border:1px solid rgba(74,222,128,.35);
+  padding:5px 12px 5px 8px;border-radius:50px;
+  color:#4ade80;font-weight:700;font-size:.85rem;
 }
-.hf-dot.green{
-  background:#4ade80;
-  box-shadow:0 0 0 3px rgba(74,222,128,.2),0 0 8px #4ade80;
-}
-.hf-dot.blue{
-  background:#60c8ff;
-  box-shadow:0 0 0 3px rgba(96,200,255,.2);
-}
-.hf-sep{color:rgba(255,255,255,.25);font-size:.85rem}
+.hf-icon{flex-shrink:0}
+.hf-icon.green{color:#4ade80;filter:drop-shadow(0 0 4px rgba(74,222,128,.6))}
+.hf-icon.blue{color:rgba(255,255,255,.5)}
+.hf-sep{color:rgba(255,255,255,.2)}
 .hero-text p{
   color:rgba(255,255,255,.55);
   font-size:.9rem;line-height:1.7;
