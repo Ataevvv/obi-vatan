@@ -76,7 +76,7 @@ function sendTelegramOrder(order) {
 
   const bottles = [];
   if (order.qty6 > 0) bottles.push(`🫙 6Л × ${order.qty6} = ${order.qty6 * 7} сом`);
-  if (order.qty16 > 0) bottles.push(`🫙 16Л × ${order.qty16} = ${order.qty16 * 25} сом`);
+  if (order.qty16 > 0) bottles.push(`🫙 19Л × ${order.qty16} = ${order.qty16 * 20} сом`);
 
   const msg = `🆕 *НОВЫЙ ЗАКАЗ*
 👤 ${order.name}

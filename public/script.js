@@ -5,7 +5,7 @@ if ('serviceWorker' in navigator) {
   });
 }
 
-const PRICE_6 = 7, PRICE_16 = 25;
+const PRICE_6 = 7, PRICE_16 = 20;
 const qty = { qty6: 0, qty16: 0 };
 
 // ── Sticky header ──
@@ -217,7 +217,7 @@ document.getElementById('orderForm').addEventListener('submit', async function (
 function showSuccess(data) {
   const bottles = [];
   if (data.qty6 > 0) bottles.push(`6-литровая × ${data.qty6} шт = ${data.qty6 * PRICE_6} сомон`);
-  if (data.qty16 > 0) bottles.push(`16-литровая × ${data.qty16} шт = ${data.qty16 * PRICE_16} сомон`);
+  if (data.qty16 > 0) bottles.push(`19-литровая × ${data.qty16} шт = ${data.qty16 * PRICE_16} сомон`);
 
   document.getElementById('sbDetails').innerHTML = `
     <div><strong>Имя:</strong> ${data.name}</div>
