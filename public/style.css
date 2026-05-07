@@ -137,8 +137,14 @@ nav a:hover{color:#fff}
   color:#4ade80;font-weight:700;font-size:.85rem;
 }
 .hf-icon{flex-shrink:0}
-.hf-icon.green{color:#4ade80;filter:drop-shadow(0 0 4px rgba(74,222,128,.6))}
 .hf-icon.blue{color:rgba(255,255,255,.5)}
+.hf-icon-box{
+  width:24px;height:24px;border-radius:50%;flex-shrink:0;
+  background:#4ade80;
+  display:flex;align-items:center;justify-content:center;
+  color:#064e2b;
+  box-shadow:0 0 10px rgba(74,222,128,.5);
+}
 .hf-sep{color:rgba(255,255,255,.2)}
 .hero-text p{
   color:rgba(255,255,255,.55);
