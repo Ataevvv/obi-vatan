@@ -349,6 +349,17 @@ app.post('/api/orders', (req, res) => {
   res.status(201).json({ success: true, id: order.id });
 });
 
+app.post('/api/orders/:id/assign', (req, res) => {
+  const { driver } = req.body;
+  const orders = readOrders();
+  const idx = orders.findIndex(o => o.id === req.params.id);
+  if (idx === -1) return res.status(404).json({ error: 'Не найден' });
+  orders[idx].assignedDriver = driver || null;
+  orders[idx].assignedAt = driver ? new Date().toISOString() : null;
+  saveOrders(orders);
+  res.json({ success: true });
+});
+
 app.patch('/api/orders/:id', (req, res) => {
   const { status } = req.body;
   const allowed = ['new', 'delivering', 'delivered', 'cancelled'];

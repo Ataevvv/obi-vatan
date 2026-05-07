@@ -1,6 +1,14 @@
 const PASS = 'obi2025';
 let allOrders = [];
 let activeFilter = 'all';
+let activeTab = 'orders';
+
+const DRIVERS = [
+  { name: 'Алишер', icon: '🚗' },
+  { name: 'Бахром',  icon: '🚙' },
+  { name: 'Санжар',  icon: '🛻' },
+  { name: 'Достон',  icon: '🚐' },
+];
 
 // ── Auth ──
 function doLogin() {
@@ -28,6 +36,17 @@ function initAdmin() {
   setInterval(loadData, 5000);
 }
 
+// ── Tabs ──
+function switchTab(tab) {
+  activeTab = tab;
+  document.querySelectorAll('.a-tab').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.a-tab')[tab === 'orders' ? 0 : 1].classList.add('active');
+  document.querySelector('.stats-row').style.display = tab === 'orders' ? '' : 'none';
+  document.querySelector('.charts-row').style.display = tab === 'orders' ? '' : 'none';
+  document.getElementById('dispatchPanel').style.display = tab === 'dispatch' ? '' : 'none';
+  if (tab === 'dispatch') renderDispatcher(allOrders);
+}
+
 // ── Load ──
 async function loadData() {
   try {
@@ -40,8 +59,21 @@ async function loadData() {
     renderProductStats(allOrders);
     renderDriverStats(allOrders);
     renderClientsStats(clients);
+    if (activeTab === 'dispatch') renderDispatcher(allOrders);
+    updateDispatchBadge(allOrders);
   } catch {
     console.error('Ошибка загрузки');
+  }
+}
+
+function updateDispatchBadge(orders) {
+  const unassigned = orders.filter(o => o.status === 'new' && !o.assignedDriver).length;
+  const badge = document.getElementById('dispatchBadge');
+  if (unassigned > 0) {
+    badge.textContent = unassigned;
+    badge.style.display = 'inline-flex';
+  } else {
+    badge.style.display = 'none';
   }
 }
 
@@ -192,6 +224,80 @@ function renderDriverStats(orders) {
       <div class="dr-badge">${d.total} всего</div>
     </div>`;
   }).join('');
+}
+
+// ── Dispatcher ──
+function renderDispatcher(orders) {
+  const today = new Date().toDateString();
+  const pending = orders
+    .filter(o => new Date(o.createdAt).toDateString() === today && o.status === 'new')
+    .reverse();
+
+  const el = document.getElementById('dispatchGrid');
+  if (!el) return;
+
+  if (pending.length === 0) {
+    el.innerHTML = `<div class="dc-empty">
+      <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+      <p>Нет новых заказов для распределения</p>
+    </div>`;
+    return;
+  }
+
+  el.innerHTML = pending.map(o => {
+    const bottles = [];
+    if (o.qty6 > 0) bottles.push(`${o.qty6}×6Л`);
+    if (o.qty16 > 0) bottles.push(`${o.qty16}×16Л`);
+    const time = new Date(o.createdAt).toLocaleTimeString('ru-RU', { hour:'2-digit', minute:'2-digit' });
+
+    const driverButtons = o.assignedDriver
+      ? `<div class="dc-assigned">✅ Назначен: ${o.assignedDriver}
+           <button onclick="unassignOrder('${o.id}')" style="margin-left:auto;background:none;border:none;cursor:pointer;color:#dc2626;font-size:.8rem;font-weight:700">Отменить</button>
+         </div>`
+      : `<div class="dc-drivers">
+          ${DRIVERS.map(d => `
+            <button class="dc-driver-btn" onclick="assignOrder('${o.id}','${d.name}')">
+              <span class="d-icon">${d.icon}</span>
+              <span class="d-name">${d.name}</span>
+            </button>`).join('')}
+        </div>`;
+
+    return `<div class="dc-card ${o.assignedDriver ? 'assigned' : ''}" id="dc-${o.id}">
+      <div class="dc-top">
+        <div class="dc-name">${o.name}</div>
+        <div class="dc-time">${time}</div>
+      </div>
+      <div class="dc-addr">📍 ${o.address}</div>
+      <div class="dc-info">
+        <span class="dc-bottles">💧 ${bottles.join(' + ')}</span>
+        <span class="dc-total">${o.total} сом</span>
+      </div>
+      <div class="dc-phone">📞 ${o.phone}</div>
+      ${driverButtons}
+    </div>`;
+  }).join('');
+}
+
+async function assignOrder(orderId, driverName) {
+  try {
+    await fetch(`/api/orders/${orderId}/assign`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ driver: driverName })
+    });
+    await loadData();
+  } catch { alert('Ошибка назначения'); }
+}
+
+async function unassignOrder(orderId) {
+  try {
+    await fetch(`/api/orders/${orderId}/assign`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ driver: null })
+    });
+    await loadData();
+  } catch { alert('Ошибка'); }
 }
 
 // ── Clients stats ──

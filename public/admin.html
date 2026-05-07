@@ -50,6 +50,19 @@
     </div>
   </header>
 
+  <!-- TABS -->
+  <div class="a-tabs">
+    <button class="a-tab active" onclick="switchTab('orders')">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+      Заказы
+    </button>
+    <button class="a-tab" onclick="switchTab('dispatch')">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><rect x="1" y="3" width="15" height="13" rx="2"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>
+      Диспетчер
+      <span class="tab-badge" id="dispatchBadge" style="display:none"></span>
+    </button>
+  </div>
+
   <main class="a-main">
 
     <!-- STATS -->
@@ -155,6 +168,16 @@
       </div>
 
     </div>
+
+    <!-- DISPATCHER -->
+    <div id="dispatchPanel" style="display:none">
+      <div class="dispatch-header">
+        <h3>Новые заказы — назначение водителя</h3>
+        <span class="dispatch-hint">Нажмите на водителя чтобы назначить заказ</span>
+      </div>
+      <div class="dispatch-grid" id="dispatchGrid"></div>
+    </div>
+
   </main>
 </div>
 
