@@ -251,8 +251,8 @@ function renderDispatcher(orders) {
     const time = new Date(o.createdAt).toLocaleTimeString('ru-RU', { hour:'2-digit', minute:'2-digit' });
 
     const driverButtons = o.assignedDriver
-      ? `<div class="dc-assigned">✅ Назначен: ${o.assignedDriver}
-           <button onclick="unassignOrder('${o.id}')" style="margin-left:auto;background:none;border:none;cursor:pointer;color:#dc2626;font-size:.8rem;font-weight:700">Отменить</button>
+      ? `<div class="dc-assigned">✅ ${o.assignedDriver}
+           <button class="dc-unassign" onclick="unassignOrder('${o.id}')">✕ Отменить</button>
          </div>`
       : `<div class="dc-drivers">
           ${DRIVERS.map(d => `
@@ -268,11 +268,10 @@ function renderDispatcher(orders) {
         <div class="dc-time">${time}</div>
       </div>
       <div class="dc-addr">📍 ${o.address}</div>
-      <div class="dc-info">
+      <div class="dc-row">
         <span class="dc-bottles">💧 ${bottles.join(' + ')}</span>
         <span class="dc-total">${o.total} сом</span>
       </div>
-      <div class="dc-phone">📞 ${o.phone}</div>
       ${driverButtons}
     </div>`;
   }).join('');
