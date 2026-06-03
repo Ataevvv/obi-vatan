@@ -211,6 +211,10 @@ app.get('/admin', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'admin.html'));
 });
 
+app.get('/driver', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'driver.html'));
+});
+
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`🚀 Оби Ватан: http://localhost:${PORT}`);

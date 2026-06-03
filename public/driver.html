@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Оби Ватан — Водитель</title>
+  <link rel="stylesheet" href="driver.css"/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
+</head>
+<body>
+
+<!-- ВЫБОР ВОДИТЕЛЯ -->
+<div class="select-screen" id="selectScreen">
+  <div class="select-card">
+    <img src="logo.png" alt="Оби Ватан" class="sel-logo"/>
+    <h2>Кто вы?</h2>
+    <p>Выберите своё имя</p>
+    <div class="driver-btns">
+      <button onclick="selectDriver('Алишер')">🚗 Алишер</button>
+      <button onclick="selectDriver('Бахром')">🚙 Бахром</button>
+      <button onclick="selectDriver('Санжар')">🛻 Санжар</button>
+      <button onclick="selectDriver('Достон')">🚐 Достон</button>
+    </div>
+  </div>
+</div>
+
+<!-- ЗАКАЗЫ ВОДИТЕЛЯ -->
+<div class="driver-app" id="driverApp" style="display:none">
+
+  <header class="dr-header">
+    <div class="dr-header-left">
+      <img src="logo.png" alt="" class="dr-logo"/>
+      <div>
+        <div class="dr-name" id="driverName"></div>
+        <div class="dr-status"><span class="dr-dot"></span>Онлайн</div>
+      </div>
+    </div>
+    <button class="dr-change" onclick="changeDriver()">Сменить</button>
+  </header>
+
+  <div class="dr-main" id="drMain">
+    <div class="dr-loading">Загрузка...</div>
+  </div>
+
+</div>
+
+<script src="driver.js"></script>
+</body>
+</html>
