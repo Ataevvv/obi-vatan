@@ -13,13 +13,22 @@
 <div class="select-screen" id="selectScreen">
   <div class="select-card">
     <img src="logo.png" alt="Оби Ватан" class="sel-logo"/>
-    <h2>Кто вы?</h2>
-    <p>Выберите своё имя</p>
-    <div class="driver-btns">
-      <button onclick="selectDriver('Алишер')">🚗 Алишер</button>
-      <button onclick="selectDriver('Бахром')">🚙 Бахром</button>
-      <button onclick="selectDriver('Санжар')">🛻 Санжар</button>
-      <button onclick="selectDriver('Достон')">🚐 Достон</button>
+    <h2>Войти</h2>
+    <p>Выберите имя и введите PIN</p>
+    <div class="driver-btns" id="driverBtns">
+      <button onclick="pickDriver('Алишер', this)">🚗 Алишер</button>
+      <button onclick="pickDriver('Бахром', this)">🚙 Бахром</button>
+      <button onclick="pickDriver('Санжар', this)">🛻 Санжар</button>
+      <button onclick="pickDriver('Достон', this)">🚐 Достон</button>
+    </div>
+    <div class="pin-section" id="pinSection" style="display:none">
+      <div class="pin-label" id="pinLabel"></div>
+      <input class="pin-input" id="pinInput" type="password" inputmode="numeric" maxlength="4" placeholder="• • • •" autocomplete="off"/>
+      <div class="pin-error" id="pinError"></div>
+      <div class="pin-actions">
+        <button class="btn-pin-back" onclick="backToSelect()">← Назад</button>
+        <button class="btn-pin-ok" onclick="checkPin()">Войти</button>
+      </div>
     </div>
   </div>
 </div>

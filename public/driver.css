@@ -1,6 +1,29 @@
 *{margin:0;padding:0;box-sizing:border-box}
 body{font-family:'Inter','Segoe UI',sans-serif;background:#f0f4f8;color:#0f1f35;font-size:15px}
 
+/* ── PIN ── */
+.pin-section{width:100%}
+.pin-label{font-size:.9rem;font-weight:700;color:#0a3d6b;margin-bottom:12px;text-align:left}
+.pin-input{
+  width:100%;padding:14px;border:2px solid #e2ecf5;border-radius:12px;
+  font-size:1.4rem;text-align:center;letter-spacing:8px;
+  font-family:inherit;outline:none;transition:border .2s;
+  margin-bottom:8px;
+}
+.pin-input:focus{border-color:#1a78c2}
+.pin-error{color:#dc2626;font-size:.82rem;min-height:20px;margin-bottom:8px;text-align:center}
+.pin-actions{display:flex;gap:10px}
+.btn-pin-back{
+  flex:1;padding:13px;border:2px solid #e2ecf5;border-radius:12px;
+  background:#fff;cursor:pointer;font-family:inherit;
+  font-size:.9rem;font-weight:700;color:#64748b;
+}
+.btn-pin-ok{
+  flex:2;padding:13px;border:none;border-radius:12px;
+  background:#1a78c2;color:#fff;cursor:pointer;font-family:inherit;
+  font-size:.9rem;font-weight:700;
+}
+
 /* ── SELECT SCREEN ── */
 .select-screen{
   min-height:100vh;display:flex;align-items:center;justify-content:center;
@@ -15,7 +38,7 @@ body{font-family:'Inter','Segoe UI',sans-serif;background:#f0f4f8;color:#0f1f35;
 .sel-logo{height:52px;margin-bottom:24px}
 .select-card h2{font-size:1.4rem;font-weight:800;color:#0a3d6b;margin-bottom:6px}
 .select-card p{color:#64748b;font-size:.9rem;margin-bottom:28px}
-.driver-btns{display:flex;flex-direction:column;gap:12px}
+.driver-btns{display:flex;flex-direction:column;gap:12px;width:100%}
 .driver-btns button{
   padding:16px;border:2px solid #e2ecf5;border-radius:14px;
   background:#fff;cursor:pointer;font-family:inherit;

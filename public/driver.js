@@ -1,4 +1,13 @@
+// PIN каждого водителя — поменяйте по своему усмотрению
+const DRIVER_PINS = {
+  'Алишер': '1111',
+  'Бахром':  '2222',
+  'Санжар':  '3333',
+  'Достон':  '4444',
+};
+
 let currentDriver = null;
+let pendingDriver = null;
 let knownOrderIds = new Set();
 let refreshTimer = null;
 
@@ -18,6 +27,33 @@ function playSound() {
     osc.start(ctx.currentTime);
     osc.stop(ctx.currentTime + 0.5);
   } catch {}
+}
+
+function pickDriver(name, btn) {
+  pendingDriver = name;
+  document.getElementById('driverBtns').style.display = 'none';
+  document.getElementById('pinSection').style.display = 'block';
+  document.getElementById('pinLabel').textContent = `PIN для ${name}`;
+  document.getElementById('pinInput').value = '';
+  document.getElementById('pinError').textContent = '';
+  document.getElementById('pinInput').focus();
+}
+
+function backToSelect() {
+  pendingDriver = null;
+  document.getElementById('driverBtns').style.display = 'flex';
+  document.getElementById('pinSection').style.display = 'none';
+}
+
+function checkPin() {
+  const entered = document.getElementById('pinInput').value;
+  if (entered === DRIVER_PINS[pendingDriver]) {
+    selectDriver(pendingDriver);
+  } else {
+    document.getElementById('pinError').textContent = 'Неверный PIN';
+    document.getElementById('pinInput').value = '';
+    document.getElementById('pinInput').focus();
+  }
 }
 
 function selectDriver(name) {
@@ -142,6 +178,14 @@ async function markDelivered(orderId, btn) {
     alert('Ошибка. Попробуйте ещё раз.');
   }
 }
+
+// Enter в поле PIN
+document.addEventListener('DOMContentLoaded', () => {
+  const pinInput = document.getElementById('pinInput');
+  if (pinInput) {
+    pinInput.addEventListener('keydown', e => { if (e.key === 'Enter') checkPin(); });
+  }
+});
 
 // Автовход если уже выбирал
 const saved = localStorage.getItem('driverName');
