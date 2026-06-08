@@ -108,22 +108,21 @@ body{font-family:'Inter','Segoe UI',sans-serif;color:var(--text-main);background
   pointer-events:none;
 }
 @keyframes headlights{
-  0%,32%  {opacity:0}
-  38%     {opacity:1}
-  62%     {opacity:1}
-  68%,100%{opacity:0}
+  0%,32%   {opacity:0}
+  34%      {opacity:1}
+  36%      {opacity:0}
+  38%      {opacity:1}
+  40%      {opacity:0}
+  42%      {opacity:1}
+  62%      {opacity:1}
+  65%,100% {opacity:0}
 }
 
 /* Основная анимация машины */
 @keyframes carDrive{
-  0%   {transform:translateX(110vw);   filter:blur(2px)}
-  30%  {transform:translateX(18vw) translateY(0);   filter:blur(0)}
-  33%  {transform:translateX(18vw) translateY(-7px)}
-  36%  {transform:translateX(18vw) translateY(2px)}
-  38%  {transform:translateX(18vw) translateY(0)}
-  64%  {transform:translateX(18vw) translateY(0)}
-  67%  {transform:translateX(18vw) translateY(-4px)}
-  69%  {transform:translateX(18vw) translateY(0)}
+  0%   {transform:translateX(110vw);  filter:blur(2px)}
+  32%  {transform:translateX(18vw);   filter:blur(0)}
+  68%  {transform:translateX(18vw);   filter:blur(0)}
   100% {transform:translateX(-120vw); filter:blur(2px)}
 }
 
