@@ -23,7 +23,7 @@
 
   // Первый запуск через 0.6с (уже задан в CSS), повторы каждые 25с
   setTimeout(() => {
-    setInterval(restart, 25000);
+    setInterval(restart, 15000);
   }, 6600);
 })();
 
