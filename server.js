@@ -2,7 +2,7 @@ require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const TelegramBot = require('node-telegram-bot-api');
-const fs = require('fs');
+const { MongoClient } = require('mongodb');
 const path = require('path');
 const { randomUUID } = require('crypto');
 const https = require('https');
@@ -13,15 +13,67 @@ app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
 app.use('/media', express.static(path.join(__dirname, 'image')));
 
-const DATA_DIR = path.join(__dirname, 'data');
-if (!fs.existsSync(DATA_DIR)) fs.mkdirSync(DATA_DIR, { recursive: true });
-
-const ORDERS_FILE = path.join(__dirname, 'data', 'orders.json');
-const CLIENTS_FILE = path.join(__dirname, 'data', 'clients.json');
-const BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN;
-const CHAT_ID = process.env.TELEGRAM_CHAT_ID;
-const ESKIZ_EMAIL = process.env.ESKIZ_EMAIL;
+const BOT_TOKEN   = process.env.TELEGRAM_BOT_TOKEN;
+const CHAT_ID     = process.env.TELEGRAM_CHAT_ID;
+const ESKIZ_EMAIL    = process.env.ESKIZ_EMAIL;
 const ESKIZ_PASSWORD = process.env.ESKIZ_PASSWORD;
+const MONGODB_URI    = process.env.MONGODB_URI;
+
+// ─── MongoDB ───
+let db = null;
+
+async function connectDB() {
+  if (db) return db;
+  const client = new MongoClient(MONGODB_URI);
+  await client.connect();
+  db = client.db('obiVatan');
+  console.log('✅ MongoDB подключена');
+  return db;
+}
+
+async function getOrders() {
+  const d = await connectDB();
+  return await d.collection('orders').find({}, { projection: { _id: 0 } }).toArray();
+}
+
+async function insertOrder(order) {
+  const d = await connectDB();
+  await d.collection('orders').insertOne(order);
+}
+
+async function updateOrder(id, update) {
+  const d = await connectDB();
+  await d.collection('orders').updateOne({ id }, { $set: update });
+}
+
+async function getClients() {
+  const d = await connectDB();
+  return await d.collection('clients').find({}, { projection: { _id: 0 } }).toArray();
+}
+
+async function upsertClient(order) {
+  const d = await connectDB();
+  const now = new Date().toISOString();
+  await d.collection('clients').updateOne(
+    { phone: order.phone },
+    {
+      $set:  { name: order.name, address: order.address, lastOrderAt: now },
+      $inc:  { orderCount: 1 },
+      $setOnInsert: { firstOrderAt: now }
+    },
+    { upsert: true }
+  );
+}
+
+async function getLoyaltyInfo(phone) {
+  const d = await connectDB();
+  const client = await d.collection('clients').findOne({ phone }, { projection: { _id: 0 } });
+  if (!client) return { orderCount: 0, nextFreeAt: 10, isFreeOrder: false };
+  const count = client.orderCount || 0;
+  const isFreeOrder = count > 0 && count % 10 === 9;
+  const nextFreeAt  = 10 - (count % 10);
+  return { orderCount: count, nextFreeAt, isFreeOrder };
+}
 
 // ─── Telegram Bot ───
 let bot = null;
@@ -30,52 +82,10 @@ if (BOT_TOKEN && BOT_TOKEN !== 'YOUR_BOT_TOKEN') {
   console.log('✅ Telegram бот готов');
 }
 
-// ─── Orders helpers ───
-function readOrders() {
-  if (!fs.existsSync(ORDERS_FILE)) return [];
-  return JSON.parse(fs.readFileSync(ORDERS_FILE, 'utf8'));
-}
-
-function saveOrders(orders) {
-  fs.writeFileSync(ORDERS_FILE, JSON.stringify(orders, null, 2));
-}
-
-function readClients() {
-  if (!fs.existsSync(CLIENTS_FILE)) return [];
-  return JSON.parse(fs.readFileSync(CLIENTS_FILE, 'utf8'));
-}
-
-function saveClient(order) {
-  const clients = readClients();
-  const existing = clients.findIndex(c => c.phone === order.phone);
-  const now = new Date().toISOString();
-  if (existing !== -1) {
-    clients[existing].name = order.name;
-    clients[existing].address = order.address;
-    clients[existing].orderCount = (clients[existing].orderCount || 0) + 1;
-    clients[existing].lastOrderAt = now;
-  } else {
-    clients.push({ phone: order.phone, name: order.name, address: order.address, orderCount: 1, firstOrderAt: now, lastOrderAt: now });
-  }
-  fs.writeFileSync(CLIENTS_FILE, JSON.stringify(clients, null, 2));
-}
-
-function getLoyaltyInfo(phone) {
-  const clients = readClients();
-  const client = clients.find(c => c.phone === phone);
-  if (!client) return { orderCount: 0, nextFreeAt: 10, isFreeOrder: false };
-  const count = client.orderCount || 0;
-  const isFreeOrder = count > 0 && count % 10 === 9; // 9-й → следующий (10-й) бесплатный
-  const nextFreeAt = 10 - (count % 10);
-  return { orderCount: count, nextFreeAt, isFreeOrder };
-}
-
-// ─── Telegram: уведомление о новом заказе ───
 function sendTelegramOrder(order) {
   if (!bot || !CHAT_ID) return;
-
   const bottles = [];
-  if (order.qty6 > 0) bottles.push(`🫙 6Л × ${order.qty6} = ${order.qty6 * 7} сом`);
+  if (order.qty6  > 0) bottles.push(`🫙 6Л × ${order.qty6}  = ${order.qty6  * 7}  сом`);
   if (order.qty16 > 0) bottles.push(`🫙 19Л × ${order.qty16} = ${order.qty16 * 20} сом`);
 
   const msg = `🆕 *НОВЫЙ ЗАКАЗ*
@@ -90,14 +100,12 @@ ${bottles.join('\n')}
 }
 
 // ─── SMS via Eskiz ───
-let eskizToken = null;
-let eskizTokenTime = 0;
+let eskizToken = null, eskizTokenTime = 0;
 
 async function getEskizToken() {
   if (!ESKIZ_EMAIL || !ESKIZ_PASSWORD) return null;
   if (eskizToken && Date.now() - eskizTokenTime < 28 * 24 * 60 * 60 * 1000) return eskizToken;
-
-  return new Promise((resolve) => {
+  return new Promise(resolve => {
     const postData = `email=${encodeURIComponent(ESKIZ_EMAIL)}&password=${encodeURIComponent(ESKIZ_PASSWORD)}`;
     const req = https.request({
       hostname: 'notify.eskiz.uz', path: '/api/auth/login', method: 'POST',
@@ -106,12 +114,8 @@ async function getEskizToken() {
       let data = '';
       res.on('data', c => data += c);
       res.on('end', () => {
-        try {
-          const json = JSON.parse(data);
-          eskizToken = json.data?.token || null;
-          eskizTokenTime = Date.now();
-          resolve(eskizToken);
-        } catch { resolve(null); }
+        try { eskizToken = JSON.parse(data).data?.token || null; eskizTokenTime = Date.now(); resolve(eskizToken); }
+        catch { resolve(null); }
       });
     });
     req.on('error', () => resolve(null));
@@ -120,91 +124,82 @@ async function getEskizToken() {
 }
 
 async function sendSms(phone, text) {
-  if (!ESKIZ_EMAIL || !ESKIZ_PASSWORD) {
-    console.log(`📱 SMS (не настроен): ${phone} — ${text}`);
-    return;
-  }
   const token = await getEskizToken();
   if (!token) return;
-  const cleanPhone = phone.replace(/[^\d]/g, '');
-  const postData = JSON.stringify({ mobile_phone: cleanPhone, message: text, from: '4546' });
+  const clean = phone.replace(/[^\d]/g, '');
+  const body = JSON.stringify({ mobile_phone: clean, message: text, from: '4546' });
   const req = https.request({
     hostname: 'notify.eskiz.uz', path: '/api/message/sms/send', method: 'POST',
-    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}`, 'Content-Length': Buffer.byteLength(postData) }
-  }, res => {
-    let data = '';
-    res.on('data', c => data += c);
-    res.on('end', () => console.log('📱 SMS отправлен:', phone, JSON.parse(data)?.message || ''));
-  });
+    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}`, 'Content-Length': Buffer.byteLength(body) }
+  }, res => { let d = ''; res.on('data', c => d += c); res.on('end', () => console.log('📱 SMS:', phone)); });
   req.on('error', err => console.error('SMS error:', err.message));
-  req.write(postData); req.end();
+  req.write(body); req.end();
 }
 
 // ─── Routes ───
-app.get('/api/orders', (req, res) => {
-  res.json(readOrders());
+app.get('/api/orders', async (req, res) => {
+  try { res.json(await getOrders()); }
+  catch (e) { res.status(500).json({ error: e.message }); }
 });
 
-app.post('/api/orders', (req, res) => {
-  const { name, phone, address, qty6, qty16, notes, total } = req.body;
-  if (!name || !phone || !address) return res.status(400).json({ error: 'Заполните все поля' });
-  if ((qty6 || 0) + (qty16 || 0) === 0) return res.status(400).json({ error: 'Выберите воду' });
+app.post('/api/orders', async (req, res) => {
+  try {
+    const { name, phone, address, qty6, qty16, notes, total } = req.body;
+    if (!name || !phone || !address) return res.status(400).json({ error: 'Заполните все поля' });
+    if ((qty6 || 0) + (qty16 || 0) === 0) return res.status(400).json({ error: 'Выберите воду' });
 
-  const order = {
-    id: randomUUID(),
-    name: name.trim(), phone: phone.trim(), address: address.trim(),
-    qty6: parseInt(qty6) || 0, qty16: parseInt(qty16) || 0,
-    notes: (notes || '').trim(),
-    total: parseInt(total) || 0,
-    status: 'new',
-    createdAt: new Date().toISOString()
-  };
+    const order = {
+      id: randomUUID(),
+      name: name.trim(), phone: phone.trim(), address: address.trim(),
+      qty6: parseInt(qty6) || 0, qty16: parseInt(qty16) || 0,
+      notes: (notes || '').trim(),
+      total: parseInt(total) || 0,
+      status: 'new',
+      createdAt: new Date().toISOString()
+    };
 
-  const orders = readOrders();
-  orders.push(order);
-  saveOrders(orders);
+    const loyalty = await getLoyaltyInfo(order.phone);
+    if (loyalty.isFreeOrder) order.freeBottle = true;
 
-  const loyalty = getLoyaltyInfo(order.phone);
-  if (loyalty.isFreeOrder) order.freeBottle = true;
-  sendTelegramOrder(order);
-  saveClient(order);
-  console.log(`✅ Заказ: ${order.name} — ${order.total} сомон`);
-
-  res.status(201).json({ success: true, id: order.id });
+    await insertOrder(order);
+    await upsertClient(order);
+    sendTelegramOrder(order);
+    console.log(`✅ Заказ: ${order.name} — ${order.total} сомон`);
+    res.status(201).json({ success: true, id: order.id });
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
 });
 
-app.post('/api/orders/:id/assign', (req, res) => {
-  const { driver } = req.body;
-  const orders = readOrders();
-  const idx = orders.findIndex(o => o.id === req.params.id);
-  if (idx === -1) return res.status(404).json({ error: 'Не найден' });
-  orders[idx].assignedDriver = driver || null;
-  orders[idx].assignedAt = driver ? new Date().toISOString() : null;
-  saveOrders(orders);
-  res.json({ success: true });
+app.post('/api/orders/:id/assign', async (req, res) => {
+  try {
+    const { driver } = req.body;
+    await updateOrder(req.params.id, {
+      assignedDriver: driver || null,
+      assignedAt: driver ? new Date().toISOString() : null
+    });
+    res.json({ success: true });
+  } catch (e) { res.status(500).json({ error: e.message }); }
 });
 
-app.patch('/api/orders/:id', (req, res) => {
-  const { status } = req.body;
-  const allowed = ['new', 'delivering', 'delivered', 'cancelled'];
-  if (!allowed.includes(status)) return res.status(400).json({ error: 'Недопустимый статус' });
-
-  const orders = readOrders();
-  const idx = orders.findIndex(o => o.id === req.params.id);
-  if (idx === -1) return res.status(404).json({ error: 'Не найден' });
-
-  orders[idx].status = status;
-  orders[idx].updatedAt = new Date().toISOString();
-  saveOrders(orders);
-  res.json({ success: true });
+app.patch('/api/orders/:id', async (req, res) => {
+  try {
+    const { status } = req.body;
+    const allowed = ['new', 'delivering', 'delivered', 'cancelled'];
+    if (!allowed.includes(status)) return res.status(400).json({ error: 'Недопустимый статус' });
+    await updateOrder(req.params.id, { status, updatedAt: new Date().toISOString() });
+    res.json({ success: true });
+  } catch (e) { res.status(500).json({ error: e.message }); }
 });
 
-app.get('/api/clients', (req, res) => {
-  res.json(readClients());
+app.get('/api/clients', async (req, res) => {
+  try { res.json(await getClients()); }
+  catch (e) { res.status(500).json({ error: e.message }); }
 });
 
-app.get('/api/loyalty/:phone', (req, res) => {
-  res.json(getLoyaltyInfo(req.params.phone));
+app.get('/api/loyalty/:phone', async (req, res) => {
+  try { res.json(await getLoyaltyInfo(req.params.phone)); }
+  catch (e) { res.status(500).json({ error: e.message }); }
 });
 
 app.get('/admin', (req, res) => {
@@ -218,5 +213,5 @@ app.get('/driver', (req, res) => {
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`🚀 Оби Ватан: http://localhost:${PORT}`);
-  console.log(`📊 Админ панель: http://localhost:${PORT}/admin`);
+  connectDB().catch(console.error);
 });
