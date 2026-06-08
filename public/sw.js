@@ -1,4 +1,4 @@
-const CACHE = 'obiVatan-v3';
+const CACHE = 'obiVatan-v4';
 const STATIC = [
   '/style.css',
   '/script.js',
