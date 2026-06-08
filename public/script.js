@@ -1,3 +1,32 @@
+// ── Машина анимация — повтор каждые 25 сек ──
+(function initCarAnim() {
+  const wrap = document.getElementById('carAnim');
+  if (!wrap) return;
+  const inner = wrap.querySelector('.car-anim-inner');
+  if (!inner) return;
+
+  function restart() {
+    inner.style.animation = 'none';
+    inner.offsetHeight; // reflow
+    inner.style.animation = 'carDrive 6s cubic-bezier(0.4,0,0.2,1) forwards';
+
+    // перезапуск дочерних анимаций
+    wrap.querySelectorAll('.car-headlights,.car-brakelights,.car-splash').forEach(el => {
+      el.style.animation = 'none';
+      el.offsetHeight;
+      const name = el.classList.contains('car-headlights') ? 'headlights' :
+                   el.classList.contains('car-brakelights') ? 'brakelights' : 'splash';
+      const delay = el.classList.contains('car-splash') && el.classList.contains('right') ? '0.08s' : '0s';
+      el.style.animation = `${name} 6s ${delay} forwards`;
+    });
+  }
+
+  // Первый запуск через 0.6с (уже задан в CSS), повторы каждые 25с
+  setTimeout(() => {
+    setInterval(restart, 25000);
+  }, 6600);
+})();
+
 // ── PWA Service Worker ──
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {

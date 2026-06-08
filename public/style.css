@@ -16,120 +16,129 @@ body{font-family:'Inter','Segoe UI',sans-serif;color:var(--text-main);background
 .container{max-width:1160px;margin:0 auto;padding:0 24px}
 
 /* ── ГЛОБАЛЬНОЕ ВИДЕО ── */
-/* ── ДОРОГА ── */
-.road-strip{
-  position:fixed;
-  bottom:0;left:0;width:100%;height:100px;
-  background:linear-gradient(180deg,
-    rgba(10,10,20,0) 0%,
-    rgba(15,15,30,0.85) 35%,
-    rgba(10,12,25,0.97) 100%);
-  z-index:1;pointer-events:none;
-  display:flex;align-items:center;justify-content:center;gap:56px;
-  overflow:hidden;
-}
-/* мокрый блеск дороги */
-.road-strip::before{
-  content:'';
-  position:absolute;
-  bottom:0;left:0;right:0;height:40px;
-  background:linear-gradient(90deg,
-    transparent 0%,
-    rgba(80,160,255,0.07) 30%,
-    rgba(120,200,255,0.12) 50%,
-    rgba(80,160,255,0.07) 70%,
-    transparent 100%);
-}
-.road-line{
-  width:56px;height:5px;
-  background:rgba(255,255,255,0.45);
-  border-radius:3px;
-  animation:roadMove 0.38s linear infinite;
-  flex-shrink:0;
-}
-@keyframes roadMove{
-  0%  {transform:translateX(0)}
-  100%{transform:translateX(-112px)}
-}
+/* Дорога убрана — только тень + отражение */
 
 /* ── МАШИНА АНИМАЦИЯ ── */
 .car-anim-wrap{
   position:fixed;
-  bottom:14px;left:0;width:100%;
+  bottom:10px;left:0;width:100%;
   z-index:2;pointer-events:none;
-  animation:carDrive 6s cubic-bezier(0.25,0.1,0.25,1) 0.6s forwards;
 }
 .car-anim-inner{
   display:inline-block;
   position:relative;
+  animation:carDrive 6s cubic-bezier(0.4,0,0.2,1) forwards;
 }
 .car-anim-img{
   display:block;
   width:420px;max-width:58vw;
   object-fit:contain;
-  filter:drop-shadow(0 6px 18px rgba(0,0,0,0.5));
+  filter:drop-shadow(0 8px 20px rgba(0,0,0,0.6));
 }
 
-/* Отражение на мокрой дороге */
+/* Отражение на мокрой поверхности */
 .car-reflection{
   display:block;
   width:420px;max-width:58vw;
   object-fit:contain;
   position:absolute;
-  bottom:-38%;left:0;
+  bottom:-36%;left:0;
   transform:scaleY(-1);
-  opacity:0.18;
-  filter:blur(3px) brightness(0.7);
-  mask-image:linear-gradient(to bottom, rgba(0,0,0,0.6) 0%, transparent 80%);
-  -webkit-mask-image:linear-gradient(to bottom, rgba(0,0,0,0.6) 0%, transparent 80%);
+  opacity:0.15;
+  filter:blur(4px) brightness(0.6);
+  mask-image:linear-gradient(to bottom,rgba(0,0,0,0.5) 0%,transparent 75%);
+  -webkit-mask-image:linear-gradient(to bottom,rgba(0,0,0,0.5) 0%,transparent 75%);
 }
 
 /* Тень под машиной */
 .car-shadow{
   position:absolute;
-  bottom:-6px;left:8%;
-  width:84%;height:16px;
-  background:radial-gradient(ellipse, rgba(0,0,0,0.55) 0%, transparent 70%);
+  bottom:-4px;left:10%;
+  width:80%;height:14px;
+  background:radial-gradient(ellipse,rgba(0,0,0,0.6) 0%,transparent 70%);
   border-radius:50%;
-  filter:blur(4px);
+  filter:blur(5px);
 }
 
-/* Свет фар */
+/* Фары */
 .car-headlights{
   position:absolute;
-  bottom:30%;left:-8%;
-  width:30%;height:50%;
+  bottom:28%;left:-10%;
+  width:28%;height:45%;
   background:radial-gradient(ellipse at right center,
-    rgba(255,240,180,0.35) 0%,
-    rgba(255,220,100,0.1) 40%,
+    rgba(255,245,190,0.4) 0%,
+    rgba(255,220,100,0.12) 45%,
     transparent 70%);
   opacity:0;
-  animation:headlights 6s 0.6s forwards;
   pointer-events:none;
+  animation:headlights 6s forwards;
 }
 @keyframes headlights{
-  0%,32%   {opacity:0}
-  34%      {opacity:1}
-  36%      {opacity:0}
-  38%      {opacity:1}
-  40%      {opacity:0}
-  42%      {opacity:1}
-  62%      {opacity:1}
-  65%,100% {opacity:0}
+  0%,30%  {opacity:0}
+  33%     {opacity:1}
+  35%     {opacity:0}
+  37%     {opacity:1}
+  39%     {opacity:0}
+  41%     {opacity:1}
+  64%     {opacity:1}
+  67%,100%{opacity:0}
 }
 
-/* Основная анимация машины */
+/* Стоп-сигналы */
+.car-brakelights{
+  position:absolute;
+  bottom:32%;right:-4%;
+  width:14%;height:30%;
+  background:radial-gradient(ellipse at left center,
+    rgba(255,40,40,0.55) 0%,
+    rgba(255,0,0,0.15) 50%,
+    transparent 75%);
+  opacity:0;
+  pointer-events:none;
+  animation:brakelights 6s forwards;
+}
+@keyframes brakelights{
+  0%,28%  {opacity:0}
+  30%     {opacity:1}
+  42%     {opacity:0}
+  64%     {opacity:0}
+  66%     {opacity:1}
+  70%,100%{opacity:0}
+}
+
+/* Брызги воды */
+.car-splash{
+  position:absolute;
+  bottom:8%;
+  width:28px;height:28px;
+  border-radius:50%;
+  background:radial-gradient(circle,rgba(140,210,255,0.7) 0%,transparent 70%);
+  opacity:0;
+  pointer-events:none;
+  animation:splash 6s forwards;
+}
+.car-splash.left {left:12%}
+.car-splash.right{left:62%}
+.car-splash.right{animation-delay:0.08s}
+@keyframes splash{
+  0%,5%   {opacity:0;transform:scale(0) translateY(0)}
+  8%      {opacity:0.8;transform:scale(1.2) translateY(-6px)}
+  12%     {opacity:0;transform:scale(2) translateY(-12px)}
+  30%,100%{opacity:0;transform:scale(0) translateY(0)}
+}
+
+/* Наклон при торможении */
 @keyframes carDrive{
-  0%   {transform:translateX(110vw);  filter:blur(2px)}
-  32%  {transform:translateX(18vw);   filter:blur(0)}
-  68%  {transform:translateX(18vw);   filter:blur(0)}
-  100% {transform:translateX(-120vw); filter:blur(2px)}
+  0%  {transform:translateX(110vw) rotate(0deg);   filter:blur(2.5px)}
+  28% {transform:translateX(20vw)  rotate(-1.5deg);filter:blur(0)}
+  33% {transform:translateX(18vw)  rotate(0deg);   filter:blur(0)}
+  66% {transform:translateX(18vw)  rotate(0deg);   filter:blur(0)}
+  70% {transform:translateX(20vw)  rotate(0.8deg); filter:blur(0)}
+  100%{transform:translateX(-120vw) rotate(0deg);  filter:blur(2.5px)}
 }
 
 @media(max-width:600px){
-  .car-anim-img,.car-reflection{width:270px;max-width:76vw}
-  .road-strip{height:75px;gap:38px}
-  .road-line{width:38px}
+  .car-anim-img,.car-reflection{width:265px;max-width:75vw}
 }
 
 .bg-video{
