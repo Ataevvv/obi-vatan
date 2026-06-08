@@ -16,18 +16,11 @@ body{font-family:'Inter','Segoe UI',sans-serif;color:var(--text-main);background
 .container{max-width:1160px;margin:0 auto;padding:0 24px}
 
 /* ── ГЛОБАЛЬНОЕ ВИДЕО ── */
-.bg-photo{
+.bg-video{
   position:fixed;inset:0;
-  background:url('/media/photo_2026-06-09_00-32-34.jpg') center bottom / contain no-repeat;
-  background-color:#000c1e;
-  z-index:-2;pointer-events:none;
   width:100%;height:100%;
-}
-@media(min-width:768px){
-  .bg-photo{
-    background:url('/media/photo_2026-06-09_00-32-34.jpg') left bottom / 70% auto no-repeat;
-    background-color:#000c1e;
-  }
+  object-fit:cover;
+  z-index:-2;pointer-events:none;
 }
 .bg-overlay{
   position:fixed;inset:0;
