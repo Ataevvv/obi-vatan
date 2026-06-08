@@ -248,6 +248,58 @@ app.get('/driver', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'driver.html'));
 });
 
+app.get('/track', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'track.html'));
+});
+
+// ─── Ежедневный отчёт в 17:00 ───
+let lastReportDate = null;
+
+async function sendDailyReport() {
+  if (!bot || !CHAT_ID) return;
+  try {
+    const orders = await getOrders();
+    const today = new Date().toDateString();
+    const todayOrders = orders.filter(o => new Date(o.createdAt).toDateString() === today);
+    const delivered = todayOrders.filter(o => o.status === 'delivered');
+    const revenue = delivered.reduce((s, o) => s + o.total, 0);
+
+    const driverMap = {};
+    delivered.forEach(o => {
+      const d = o.assignedDriver || 'Не назначен';
+      if (!driverMap[d]) driverMap[d] = { count: 0, revenue: 0 };
+      driverMap[d].count++;
+      driverMap[d].revenue += o.total;
+    });
+
+    const driverLines = Object.entries(driverMap)
+      .map(([name, s]) => `  🚗 ${name}: ${s.count} дост. · ${s.revenue} сом`)
+      .join('\n') || '  Нет данных';
+
+    const msg = `📊 *Итог дня — ${new Date().toLocaleDateString('ru-RU', {day:'numeric',month:'long'})}*
+━━━━━━━━━━━━━━━━
+📦 Всего заказов: ${todayOrders.length}
+✅ Доставлено: ${delivered.length}
+❌ Отменено: ${todayOrders.filter(o => o.status === 'cancelled').length}
+💰 *Выручка: ${revenue} сомон*
+━━━━━━━━━━━━━━━━
+*Водители:*
+${driverLines}`;
+
+    bot.sendMessage(CHAT_ID, msg, { parse_mode: 'Markdown' });
+    console.log('📊 Ежедневный отчёт отправлен');
+  } catch (e) { console.error('Report error:', e.message); }
+}
+
+setInterval(() => {
+  const now = new Date();
+  const today = now.toDateString();
+  if (now.getHours() === 17 && now.getMinutes() === 0 && lastReportDate !== today) {
+    lastReportDate = today;
+    sendDailyReport();
+  }
+}, 60000);
+
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`🚀 Оби Ватан: http://localhost:${PORT}`);

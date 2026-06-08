@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Оби Ватан — Отслеживание заказа</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
+  <style>
+    *{margin:0;padding:0;box-sizing:border-box}
+    body{font-family:'Inter',sans-serif;background:linear-gradient(135deg,#0a2a50,#1a78c2);min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px}
+    .card{background:#fff;border-radius:24px;padding:36px 28px;width:100%;max-width:420px;box-shadow:0 24px 60px rgba(0,0,0,.25)}
+    .logo{display:flex;align-items:center;gap:10px;margin-bottom:28px}
+    .logo img{height:40px}
+    .logo span{font-size:1.1rem;font-weight:800;color:#0a3d6b}
+    h2{font-size:1.3rem;font-weight:800;color:#0a3d6b;margin-bottom:6px}
+    p{color:#64748b;font-size:.88rem;margin-bottom:24px}
+    .input-row{display:flex;gap:10px;margin-bottom:20px}
+    input{flex:1;padding:13px 16px;border:2px solid #e2ecf5;border-radius:12px;font-size:.95rem;font-family:inherit;outline:none;transition:border .2s}
+    input:focus{border-color:#1a78c2}
+    button{padding:13px 20px;background:#1a78c2;color:#fff;border:none;border-radius:12px;font-family:inherit;font-size:.9rem;font-weight:700;cursor:pointer;white-space:nowrap}
+    button:hover{background:#0a3d6b}
+    #result{margin-top:4px}
+    .order-item{background:#f8fafc;border-radius:14px;padding:16px;margin-bottom:12px;border:1.5px solid #e2ecf5}
+    .order-item.delivering{border-color:#f97316;background:#fff7ed}
+    .order-item.delivered{border-color:#16a34a;background:#f0fdf4}
+    .order-item.new{border-color:#1a78c2;background:#eaf5ff}
+    .oi-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
+    .oi-date{font-size:.75rem;color:#64748b}
+    .status-badge{font-size:.72rem;font-weight:700;padding:3px 10px;border-radius:20px}
+    .status-badge.new{background:#dbeafe;color:#1a78c2}
+    .status-badge.delivering{background:#fed7aa;color:#c2410c}
+    .status-badge.delivered{background:#bbf7d0;color:#15803d}
+    .status-badge.cancelled{background:#fee2e2;color:#dc2626}
+    .oi-addr{font-size:.82rem;color:#334155;margin-bottom:6px;display:flex;align-items:center;gap:5px}
+    .oi-bottles{font-size:.78rem;font-weight:700;color:#1a78c2;background:#eaf5ff;padding:3px 10px;border-radius:6px;display:inline-block}
+    .oi-total{font-size:.9rem;font-weight:800;color:#0a3d6b;margin-top:8px}
+    .oi-driver{font-size:.75rem;color:#64748b;margin-top:4px}
+    .empty{text-align:center;padding:32px;color:#64748b;font-size:.88rem}
+    .empty div{font-size:2.5rem;margin-bottom:10px}
+    .steps{display:flex;justify-content:space-between;margin-top:12px;position:relative}
+    .steps::before{content:'';position:absolute;top:12px;left:10%;right:10%;height:2px;background:#e2ecf5;z-index:0}
+    .step{display:flex;flex-direction:column;align-items:center;gap:6px;z-index:1;flex:1}
+    .step-dot{width:24px;height:24px;border-radius:50%;background:#e2ecf5;display:flex;align-items:center;justify-content:center;font-size:.6rem;font-weight:800;color:#94a3b8}
+    .step-dot.done{background:#1a78c2;color:#fff}
+    .step-dot.active{background:#f97316;color:#fff;box-shadow:0 0 0 4px rgba(249,115,22,.2)}
+    .step-label{font-size:.65rem;color:#94a3b8;text-align:center}
+    .step-label.done,.step-label.active{color:#334155;font-weight:600}
+  </style>
+</head>
+<body>
+<div class="card">
+  <div class="logo">
+    <img src="/logo.png" alt="Оби Ватан"/>
+    <span>Оби Ватан</span>
+  </div>
+  <h2>Отслеживание заказа</h2>
+  <p>Введите номер телефона чтобы увидеть статус ваших заказов</p>
+  <div class="input-row">
+    <input type="tel" id="phoneInput" placeholder="+992 XX XXX XXXX"/>
+    <button onclick="trackOrder()">Найти</button>
+  </div>
+  <div id="result"></div>
+</div>
+<script>
+const STATUS = {
+  new:       { label:'Принят',    cls:'new' },
+  delivering:{ label:'В пути',    cls:'delivering' },
+  delivered: { label:'Доставлен', cls:'delivered' },
+  cancelled: { label:'Отменён',   cls:'cancelled' }
+};
+
+async function trackOrder() {
+  const phone = document.getElementById('phoneInput').value.trim();
+  if (!phone) return;
+  const el = document.getElementById('result');
+  el.innerHTML = '<div class="empty"><div>⏳</div>Ищем заказы...</div>';
+
+  try {
+    const res = await fetch('/api/orders');
+    const all = await res.json();
+    const mine = all.filter(o => o.phone === phone || o.phone === phone.replace(/\s/g,'')).reverse();
+
+    if (mine.length === 0) {
+      el.innerHTML = '<div class="empty"><div>📭</div>Заказов не найдено</div>';
+      return;
+    }
+
+    el.innerHTML = mine.slice(0, 5).map(o => {
+      const bottles = [];
+      if (o.qty6  > 0) bottles.push(`${o.qty6}×6Л`);
+      if (o.qty16 > 0) bottles.push(`${o.qty16}×19Л`);
+      const s = STATUS[o.status] || STATUS.new;
+      const date = new Date(o.createdAt).toLocaleDateString('ru-RU', {day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'});
+
+      const stepDone = (n) => {
+        if (o.status === 'new') return n < 1 ? 'done' : n === 1 ? 'active' : '';
+        if (o.status === 'delivering') return n < 2 ? 'done' : n === 2 ? 'active' : '';
+        if (o.status === 'delivered') return 'done';
+        return '';
+      };
+
+      return `<div class="order-item ${s.cls}">
+        <div class="oi-top">
+          <span class="status-badge ${s.cls}">${s.label}</span>
+          <span class="oi-date">${date}</span>
+        </div>
+        <div class="oi-addr">📍 ${o.address}</div>
+        <span class="oi-bottles">💧 ${bottles.join(' + ')}</span>
+        <div class="oi-total">Итого: ${o.total} сомон</div>
+        ${o.driverName ? `<div class="oi-driver">🚗 Водитель: ${o.driverName}</div>` : ''}
+        <div class="steps">
+          <div class="step"><div class="step-dot ${stepDone(1)}">✓</div><div class="step-label ${stepDone(1)}">Принят</div></div>
+          <div class="step"><div class="step-dot ${stepDone(2)}">🚚</div><div class="step-label ${stepDone(2)}">В пути</div></div>
+          <div class="step"><div class="step-dot ${stepDone(3)}">✓</div><div class="step-label ${stepDone(3)}">Доставлен</div></div>
+        </div>
+      </div>`;
+    }).join('');
+  } catch {
+    el.innerHTML = '<div class="empty"><div>❌</div>Ошибка соединения</div>';
+  }
+}
+
+document.getElementById('phoneInput').addEventListener('keydown', e => { if (e.key === 'Enter') trackOrder(); });
+</script>
+</body>
+</html>

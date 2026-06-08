@@ -111,6 +111,14 @@ async function loadOrders() {
       new Date(o.createdAt).toDateString() === today
     );
 
+    // История — доставленные сегодня
+    const done = all.filter(o =>
+      o.assignedDriver === currentDriver &&
+      o.status === 'delivered' &&
+      new Date(o.createdAt).toDateString() === today
+    );
+    renderHistory(done);
+
     // Проверяем новые заказы
     const newOnes = mine.filter(o => !knownOrderIds.has(o.id));
     if (knownOrderIds.size > 0 && newOnes.length > 0) {
@@ -177,6 +185,39 @@ function renderOrders(orders) {
       </div>
     </div>`;
   }).join('');
+}
+
+function renderHistory(done) {
+  let el = document.getElementById('drHistory');
+  if (!el) {
+    el = document.createElement('div');
+    el.id = 'drHistory';
+    el.style.cssText = 'padding:16px;margin-top:8px;border-top:2px solid #e2ecf5';
+    document.getElementById('drMain').after(el);
+  }
+  if (done.length === 0) { el.innerHTML = ''; return; }
+  const revenue = done.reduce((s, o) => s + o.total, 0);
+  el.innerHTML = `
+    <div style="font-size:.8rem;font-weight:700;color:#64748b;margin-bottom:10px;text-transform:uppercase;letter-spacing:.05em">
+      История за сегодня
+    </div>
+    <div style="background:#f0fdf4;border:1.5px solid #bbf7d0;border-radius:12px;padding:14px;margin-bottom:10px;display:flex;justify-content:space-between;align-items:center">
+      <div>
+        <div style="font-size:1.1rem;font-weight:800;color:#15803d">${done.length} доставок</div>
+        <div style="font-size:.78rem;color:#16a34a">сегодня</div>
+      </div>
+      <div style="text-align:right">
+        <div style="font-size:1.1rem;font-weight:800;color:#15803d">${revenue} сом</div>
+        <div style="font-size:.78rem;color:#16a34a">выручка</div>
+      </div>
+    </div>
+    ${done.map(o => {
+      const time = new Date(o.createdAt).toLocaleTimeString('ru-RU', {hour:'2-digit',minute:'2-digit'});
+      return `<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid #e2ecf5;font-size:.82rem">
+        <span style="color:#334155">${o.name} · ${o.address.substring(0,25)}...</span>
+        <span style="color:#16a34a;font-weight:700">${o.total} сом</span>
+      </div>`;
+    }).join('')}`;
 }
 
 async function markDelivered(orderId, btn) {
