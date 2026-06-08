@@ -19,6 +19,14 @@ const ESKIZ_EMAIL    = process.env.ESKIZ_EMAIL;
 const ESKIZ_PASSWORD = process.env.ESKIZ_PASSWORD;
 const MONGODB_URI    = process.env.MONGODB_URI;
 
+// Telegram ID каждого водителя — добавляй по мере получения
+const DRIVER_IDS = {
+  'Алишер': '5805237043',
+  'Бахром':  null,
+  'Санжар':  null,
+  'Достон':  null,
+};
+
 // ─── MongoDB ───
 let db = null;
 
@@ -178,6 +186,36 @@ app.post('/api/orders/:id/assign', async (req, res) => {
       assignedDriver: driver || null,
       assignedAt: driver ? new Date().toISOString() : null
     });
+
+    // Отправляем сообщение водителю в Telegram
+    if (driver && bot && DRIVER_IDS[driver]) {
+      const orders = await getOrders();
+      const order = orders.find(o => o.id === req.params.id);
+      if (order) {
+        const bottles = [];
+        if (order.qty6  > 0) bottles.push(`${order.qty6}×6Л`);
+        if (order.qty16 > 0) bottles.push(`${order.qty16}×19Л`);
+        const mapsLink = `https://maps.google.com/?q=${encodeURIComponent(order.address)}`;
+
+        const msg = `🚚 *Новый заказ для тебя!*
+👤 ${order.name}
+📞 ${order.phone}
+📍 ${order.address}
+💧 ${bottles.join(' + ')}
+💰 *${order.total} сомон*${order.notes ? `\n💬 ${order.notes}` : ''}`;
+
+        bot.sendMessage(DRIVER_IDS[driver], msg, {
+          parse_mode: 'Markdown',
+          reply_markup: {
+            inline_keyboard: [[
+              { text: '🗺 Открыть навигацию', url: mapsLink },
+              { text: '📞 Позвонить', url: `tel:${order.phone}` }
+            ]]
+          }
+        }).catch(err => console.error('Driver TG error:', err.message));
+      }
+    }
+
     res.json({ success: true });
   } catch (e) { res.status(500).json({ error: e.message }); }
 });
