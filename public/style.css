@@ -16,37 +16,66 @@ body{font-family:'Inter','Segoe UI',sans-serif;color:var(--text-main);background
 .container{max-width:1160px;margin:0 auto;padding:0 24px}
 
 /* ── ГЛОБАЛЬНОЕ ВИДЕО ── */
+/* ── ДОРОГА ── */
+.road-strip{
+  position:fixed;
+  bottom:0;left:0;width:100%;
+  height:90px;
+  background:linear-gradient(180deg, rgba(20,20,20,0) 0%, rgba(30,30,30,0.92) 40%, rgba(25,25,25,0.98) 100%);
+  z-index:1;pointer-events:none;
+  display:flex;align-items:center;justify-content:center;gap:60px;
+  overflow:hidden;
+}
+.road-line{
+  width:60px;height:6px;
+  background:rgba(255,255,255,0.5);
+  border-radius:3px;
+  animation:roadMove 0.4s linear infinite;
+}
+@keyframes roadMove{
+  0%{transform:translateX(0)}
+  100%{transform:translateX(-120px)}
+}
+
 /* ── МАШИНА АНИМАЦИЯ ── */
 .car-anim-wrap{
   position:fixed;
-  bottom:0;
+  bottom:12px;
   left:0;
   width:100%;
-  z-index:1;
+  z-index:2;
   pointer-events:none;
-  animation:carDrive 5s ease-in-out 1s forwards;
+  animation:carDrive 5.5s ease-in-out 0.8s forwards;
+}
+.car-anim-inner{
+  display:inline-block;
+  position:relative;
+}
+.car-anim-inner::after{
+  content:'';
+  position:absolute;
+  bottom:0;left:0;right:0;
+  height:45%;
+  background:linear-gradient(to top, rgba(25,25,25,0.95) 0%, transparent 100%);
+  pointer-events:none;
 }
 .car-anim-img{
   display:block;
-  width:420px;
-  max-width:60vw;
+  width:400px;
+  max-width:58vw;
   object-fit:contain;
-  filter:drop-shadow(0 8px 24px rgba(0,0,0,.5));
+  filter:drop-shadow(0 -2px 12px rgba(0,0,0,0.6));
 }
 @keyframes carDrive{
   0%   { transform:translateX(110vw); }
-  35%  { transform:translateX(20vw); }
-  65%  { transform:translateX(20vw); }
+  35%  { transform:translateX(18vw); }
+  65%  { transform:translateX(18vw); }
   100% { transform:translateX(-120vw); }
 }
 @media(max-width:600px){
-  .car-anim-img{ width:280px; max-width:80vw; }
-  @keyframes carDrive{
-    0%   { transform:translateX(110vw); }
-    35%  { transform:translateX(5vw); }
-    65%  { transform:translateX(5vw); }
-    100% { transform:translateX(-120vw); }
-  }
+  .car-anim-img{ width:260px; max-width:78vw; }
+  .road-strip{ height:70px; gap:40px; }
+  .road-line{ width:40px; }
 }
 
 .bg-video{
