@@ -86,8 +86,39 @@ async function getLoyaltyInfo(phone) {
 // ─── Telegram Bot ───
 let bot = null;
 if (BOT_TOKEN && BOT_TOKEN !== 'YOUR_BOT_TOKEN') {
-  bot = new TelegramBot(BOT_TOKEN, { polling: false });
+  bot = new TelegramBot(BOT_TOKEN, {
+    polling: { params: { allowed_updates: JSON.stringify(['callback_query']) } }
+  });
   console.log('✅ Telegram бот готов');
+
+  bot.on('callback_query', async (query) => {
+    const [action, orderId] = query.data.split(':');
+    if (action !== 'done') return;
+
+    try {
+      await updateOrder(orderId, { status: 'delivered', deliveredAt: new Date().toISOString() });
+      const driverName = query.from.first_name || 'Водитель';
+
+      bot.editMessageReplyMarkup({ inline_keyboard: [] }, {
+        chat_id: query.message.chat.id,
+        message_id: query.message.message_id
+      }).catch(() => {});
+
+      bot.answerCallbackQuery(query.id, { text: '✅ Отлично! Заказ доставлен!' });
+
+      // Уведомление диспетчеру
+      if (CHAT_ID) {
+        const orders = await getOrders();
+        const order = orders.find(o => o.id === orderId);
+        if (order) {
+          bot.sendMessage(CHAT_ID,
+            `✅ *Доставлено — ${driverName}*\n👤 ${order.name} · 📍 ${order.address}\n💰 *${order.total} сомон*`,
+            { parse_mode: 'Markdown' }
+          ).catch(() => {});
+        }
+      }
+    } catch (e) { console.error('Delivered error:', e.message); }
+  });
 }
 
 function sendTelegramOrder(order) {
@@ -207,10 +238,15 @@ app.post('/api/orders/:id/assign', async (req, res) => {
         bot.sendMessage(DRIVER_IDS[driver], msg, {
           parse_mode: 'Markdown',
           reply_markup: {
-            inline_keyboard: [[
-              { text: '🗺 Открыть навигацию', url: mapsLink },
-              { text: '📞 Позвонить', url: `tel:${order.phone}` }
-            ]]
+            inline_keyboard: [
+              [
+                { text: '🗺 Навигация', url: mapsLink },
+                { text: '📞 Позвонить', url: `tel:${order.phone}` }
+              ],
+              [
+                { text: '✅ Доставлен', callback_data: `done:${order.id}` }
+              ]
+            ]
           }
         }).catch(err => console.error('Driver TG error:', err.message));
       }
