@@ -18,9 +18,16 @@ body{font-family:'Inter','Segoe UI',sans-serif;color:var(--text-main);background
 /* ── ГЛОБАЛЬНОЕ ВИДЕО ── */
 .bg-photo{
   position:fixed;inset:0;
-  background:url('/media/photo_2026-06-09_00-32-34.jpg') center center / cover no-repeat;
+  background:url('/media/photo_2026-06-09_00-32-34.jpg') center bottom / contain no-repeat;
+  background-color:#000c1e;
   z-index:-2;pointer-events:none;
   width:100%;height:100%;
+}
+@media(min-width:768px){
+  .bg-photo{
+    background:url('/media/photo_2026-06-09_00-32-34.jpg') right bottom / 70% auto no-repeat;
+    background-color:#000c1e;
+  }
 }
 .bg-overlay{
   position:fixed;inset:0;
