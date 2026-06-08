@@ -64,7 +64,8 @@ body{font-family:'Inter','Segoe UI',sans-serif;color:var(--text-main);background
   width:400px;
   max-width:58vw;
   object-fit:contain;
-  filter:drop-shadow(0 -2px 12px rgba(0,0,0,0.6));
+  mix-blend-mode:multiply;
+  filter:drop-shadow(0 4px 16px rgba(0,0,0,0.4));
 }
 @keyframes carDrive{
   0%   { transform:translateX(110vw); }
