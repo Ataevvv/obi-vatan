@@ -62,6 +62,19 @@ function doLogout() {
   backToRoles();
 }
 
+async function clearAllOrders() {
+  if (!confirm('Удалить ВСЕ заказы? Это действие нельзя отменить.')) return;
+  try {
+    const r = await fetch('/api/orders/all', {
+      method: 'DELETE',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ password: 'obi2025' })
+    });
+    if (r.ok) { alert('Все заказы удалены'); await loadData(); }
+    else alert('Ошибка удаления');
+  } catch { alert('Ошибка сети'); }
+}
+
 // ── Init ──
 function initAdmin() {
   document.getElementById('aDate').textContent = new Date().toLocaleDateString('ru-RU', {

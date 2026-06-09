@@ -289,6 +289,16 @@ app.patch('/api/orders/:id', async (req, res) => {
   } catch (e) { res.status(500).json({ error: e.message }); }
 });
 
+app.delete('/api/orders/all', async (req, res) => {
+  try {
+    const { password } = req.body;
+    if (password !== 'obi2025') return res.status(403).json({ error: 'Нет доступа' });
+    const d = await connectDB();
+    await d.collection('orders').deleteMany({});
+    res.json({ success: true });
+  } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
 app.get('/api/clients', async (req, res) => {
   try { res.json(await getClients()); }
   catch (e) { res.status(500).json({ error: e.message }); }
