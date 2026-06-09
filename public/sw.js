@@ -1,4 +1,4 @@
-const CACHE = 'obiVatan-v6';
+const CACHE = 'obiVatan-v7';
 
 self.addEventListener('install', e => {
   self.skipWaiting();
