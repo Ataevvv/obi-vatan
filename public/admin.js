@@ -11,6 +11,22 @@ const DRIVERS = [
 ];
 
 // ── Auth ──
+function selectRole(role) {
+  if (role === 'driver') {
+    window.location.href = '/?tab=driver';
+  } else {
+    document.getElementById('roleSelect').style.display = 'none';
+    document.getElementById('adminLoginForm').style.display = 'block';
+    setTimeout(() => document.getElementById('pwInput').focus(), 80);
+  }
+}
+
+function backToRoles() {
+  document.getElementById('roleSelect').style.display = 'block';
+  document.getElementById('adminLoginForm').style.display = 'none';
+  document.getElementById('loginErr').textContent = '';
+}
+
 function doLogin() {
   if (document.getElementById('pwInput').value === PASS) {
     document.getElementById('loginScreen').style.display = 'none';
@@ -25,6 +41,7 @@ function doLogout() {
   document.getElementById('loginScreen').style.display = 'flex';
   document.getElementById('adminPanel').style.display = 'none';
   document.getElementById('pwInput').value = '';
+  backToRoles();
 }
 
 // ── Init ──
@@ -232,7 +249,6 @@ function renderDriverStats(orders) {
 
 // ── Dispatcher ──
 let dispatchMap = null;
-let dispatchMarkers = [];
 let archivePeriod = 'today';
 
 function renderDispatcher(orders) {
@@ -337,7 +353,7 @@ async function cancelOrder(orderId) {
   } catch { alert('Ошибка отмены'); }
 }
 
-// ── Карта диспетчера ──
+// ── Карта диспетчера (Яндекс) ──
 function renderDispatchMap(orders) {
   const withCoords = orders.filter(o => o.lat && o.lng);
   const wrap = document.getElementById('dispatchMapWrap');
@@ -346,31 +362,55 @@ function renderDispatchMap(orders) {
   if (withCoords.length === 0) { wrap.style.display = 'none'; return; }
   wrap.style.display = 'block';
 
-  if (!dispatchMap) {
-    dispatchMap = L.map('dispatchMap', { attributionControl: false }).setView([40.2833, 69.6333], 14);
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19 }).addTo(dispatchMap);
-  }
+  ymaps.ready(function () {
+    if (!dispatchMap) {
+      dispatchMap = new ymaps.Map('dispatchMap', {
+        center: [40.2833, 69.6333],
+        zoom: 14,
+        controls: ['zoomControl']
+      });
+    } else {
+      dispatchMap.geoObjects.removeAll();
+    }
 
-  dispatchMarkers.forEach(m => m.remove());
-  dispatchMarkers = [];
+    const BlueFlag = ymaps.templateLayoutFactory.createClass(
+      '<div style="position:relative;width:24px;height:30px;cursor:pointer">' +
+      '<div style="position:absolute;left:4px;bottom:0;width:3px;height:22px;background:#1a78c2;border-radius:1px 1px 0 0;box-shadow:0 1px 4px rgba(0,0,0,.3)"></div>' +
+      '<div style="position:absolute;left:4px;top:0;width:18px;height:12px;background:#1a78c2;clip-path:polygon(0 0,100% 25%,100% 75%,0 100%);border-radius:0 3px 3px 0;filter:drop-shadow(0 2px 4px rgba(0,0,0,.2))"></div>' +
+      '</div>'
+    );
 
-  withCoords.forEach(o => {
-    const color = o.assignedDriver ? '#f97316' : '#1a78c2';
-    const icon = L.divIcon({
-      className: '',
-      html: `<div style="background:${color};width:14px;height:14px;border-radius:50%;border:2.5px solid #fff;box-shadow:0 2px 8px rgba(0,0,0,.3)"></div>`,
-      iconSize: [14, 14], iconAnchor: [7, 7]
+    const OrangeFlag = ymaps.templateLayoutFactory.createClass(
+      '<div style="position:relative;width:24px;height:30px;cursor:pointer">' +
+      '<div style="position:absolute;left:4px;bottom:0;width:3px;height:22px;background:#f97316;border-radius:1px 1px 0 0;box-shadow:0 1px 4px rgba(0,0,0,.3)"></div>' +
+      '<div style="position:absolute;left:4px;top:0;width:18px;height:12px;background:#f97316;clip-path:polygon(0 0,100% 25%,100% 75%,0 100%);border-radius:0 3px 3px 0;filter:drop-shadow(0 2px 4px rgba(0,0,0,.2))"></div>' +
+      '</div>'
+    );
+
+    const bounds = [];
+
+    withCoords.forEach(function (o) {
+      const isAssigned = !!o.assignedDriver;
+      const mark = new ymaps.Placemark(
+        [o.lat, o.lng],
+        {
+          balloonContent: `<b>${o.name}</b><br><span style="font-size:.8rem">${o.address}</span><br><b>${o.total} сом</b>${isAssigned ? `<br>🚗 ${o.assignedDriver}` : '<br>⏳ Ожидает назначения'}`
+        },
+        {
+          iconLayout: isAssigned ? OrangeFlag : BlueFlag,
+          iconShape: { type: 'Rectangle', coordinates: [[-2, -30], [22, 0]] }
+        }
+      );
+      dispatchMap.geoObjects.add(mark);
+      bounds.push([o.lat, o.lng]);
     });
-    const m = L.marker([o.lat, o.lng], { icon }).addTo(dispatchMap);
-    m.bindPopup(`<b>${o.name}</b><br><span style="font-size:.8rem">${o.address}</span><br><b>${o.total} сом</b>${o.assignedDriver ? `<br>🚗 ${o.assignedDriver}` : ''}`);
-    dispatchMarkers.push(m);
-  });
 
-  if (dispatchMarkers.length > 0) {
-    const group = L.featureGroup(dispatchMarkers);
-    dispatchMap.fitBounds(group.getBounds().pad(0.25));
-  }
-  setTimeout(() => dispatchMap && dispatchMap.invalidateSize(), 50);
+    if (bounds.length === 1) {
+      dispatchMap.setCenter(bounds[0], 16, { duration: 300 });
+    } else if (bounds.length > 1) {
+      dispatchMap.setBounds(ymaps.util.bounds.fromPoints(bounds), { checkZoomRange: true, zoomMargin: 60 });
+    }
+  });
 }
 
 // ── Архив ──

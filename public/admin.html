@@ -12,7 +12,7 @@
   <meta name="apple-mobile-web-app-title" content="ОВ Админ"/>
   <link rel="apple-touch-icon" href="/icon-admin.svg"/>
   <link rel="stylesheet" href="admin.css"/>
-  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+  <script src="https://api-maps.yandex.ru/2.1/?apikey=4d011077-ba4f-45c4-a851-7a2e1b3c0cb4&lang=ru_RU" type="text/javascript"></script>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
 </head>
 <body>
@@ -21,13 +21,48 @@
 <div class="login-screen" id="loginScreen">
   <div class="login-card">
     <img src="logo.png" alt="Оби Ватан" class="login-logo"/>
-    <h2>Панель администратора</h2>
-    <p>Введите пароль для входа</p>
-    <div class="login-field">
-      <input type="password" id="pwInput" placeholder="Пароль"/>
-      <button onclick="doLogin()">Войти</button>
+    <h2>Оби Ватан</h2>
+
+    <!-- Выбор роли -->
+    <div id="roleSelect">
+      <p>Выберите роль для входа</p>
+      <div class="role-cards">
+        <div class="role-card" onclick="selectRole('admin')">
+          <div class="role-icon">
+            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 2a5 5 0 1 0 0 10A5 5 0 0 0 12 2z"/>
+              <path d="M2 20c0-4 4.5-7 10-7s10 3 10 7"/>
+            </svg>
+          </div>
+          <div class="role-label">Администратор</div>
+        </div>
+        <div class="role-card" onclick="selectRole('driver')">
+          <div class="role-icon driver-role-icon">
+            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="1" y="3" width="15" height="13" rx="2"/>
+              <polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/>
+              <circle cx="5.5" cy="18.5" r="2.5"/>
+              <circle cx="18.5" cy="18.5" r="2.5"/>
+            </svg>
+          </div>
+          <div class="role-label">Водитель</div>
+        </div>
+      </div>
     </div>
-    <span class="login-err" id="loginErr"></span>
+
+    <!-- Форма администратора -->
+    <div id="adminLoginForm" style="display:none">
+      <button class="btn-back-role" onclick="backToRoles()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="15 18 9 12 15 6"/></svg>
+        Назад
+      </button>
+      <p style="margin-top:12px">Введите пароль администратора</p>
+      <div class="login-field" style="margin-top:12px">
+        <input type="password" id="pwInput" placeholder="Пароль"/>
+        <button onclick="doLogin()">Войти</button>
+      </div>
+      <span class="login-err" id="loginErr"></span>
+    </div>
   </div>
 </div>
 
@@ -238,7 +273,6 @@
   </main>
 </div>
 
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script src="admin.js"></script>
 <script>
   if ('serviceWorker' in navigator) {

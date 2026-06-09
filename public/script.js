@@ -140,49 +140,57 @@ function createWaterEffect() {
 }
 createWaterEffect();
 
-// ── Карта для выбора адреса ──
-let addrMap = null;
-let addrMarker = null;
+// ── Яндекс Карта для выбора адреса ──
+let ymap = null;
+let ymapMark = null;
 let addrSearchTimer = null;
-const KHUJAND = [40.2833, 69.6333];
+const KHUJAND_CENTER = [40.2833, 69.6333];
 
 function initAddressMap() {
-  if (addrMap) { addrMap.invalidateSize(); return; }
-  addrMap = L.map('addrMap', { zoomControl: true, attributionControl: false }).setView(KHUJAND, 15);
-  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19 }).addTo(addrMap);
-  addrMap.on('click', e => placeAddrMarker(e.latlng.lat, e.latlng.lng, true));
+  if (ymap) return;
+  ymaps.ready(function () {
+    ymap = new ymaps.Map('addrMap', {
+      center: KHUJAND_CENTER,
+      zoom: 15,
+      controls: ['zoomControl']
+    });
+    ymap.events.add('click', function (e) {
+      placeAddrMark(e.get('coords'), true);
+    });
+  });
 }
 
-function placeAddrMarker(lat, lng, reverse) {
-  if (addrMarker) {
-    addrMarker.setLatLng([lat, lng]);
+function placeAddrMark(coords, reverse) {
+  if (ymapMark) {
+    ymapMark.geometry.setCoordinates(coords);
   } else {
-    addrMarker = L.marker([lat, lng], { draggable: true }).addTo(addrMap);
-    addrMarker.on('dragend', () => {
-      const p = addrMarker.getLatLng();
-      document.getElementById('addrLat').value = p.lat;
-      document.getElementById('addrLng').value = p.lng;
-      reverseGeocode(p.lat, p.lng);
+    ymapMark = new ymaps.Placemark(coords, {}, {
+      draggable: true,
+      preset: 'islands#blueCircleDotIcon'
+    });
+    ymap.geoObjects.add(ymapMark);
+    ymapMark.events.add('dragend', function () {
+      const c = ymapMark.geometry.getCoordinates();
+      document.getElementById('addrLat').value = c[0];
+      document.getElementById('addrLng').value = c[1];
+      reverseGeocodeY(c);
     });
   }
-  addrMap.setView([lat, lng], 17);
-  document.getElementById('addrLat').value = lat;
-  document.getElementById('addrLng').value = lng;
-  if (reverse) reverseGeocode(lat, lng);
+  ymap.setCenter(coords, 17, { duration: 300 });
+  document.getElementById('addrLat').value = coords[0];
+  document.getElementById('addrLng').value = coords[1];
+  if (reverse) reverseGeocodeY(coords);
 }
 
-async function reverseGeocode(lat, lng) {
-  try {
-    const r = await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json&accept-language=ru`);
-    const d = await r.json();
-    if (d.address) {
-      const a = d.address;
-      const parts = [a.road || a.pedestrian || a.path, a.house_number, a.suburb || a.neighbourhood].filter(Boolean);
-      const short = parts.join(', ') || d.display_name.split(', ').slice(0, 2).join(', ');
-      document.getElementById('address').value = short;
-      document.getElementById('addrMapHint').textContent = '✅ ' + short;
-    }
-  } catch {}
+function reverseGeocodeY(coords) {
+  ymaps.geocode(coords, { results: 1 }).then(function (res) {
+    const obj = res.geoObjects.get(0);
+    if (!obj) return;
+    const full = obj.getAddressLine();
+    const short = full.replace('Таджикистан, ', '').replace('Хучанд, ', '').replace('Худжанд, ', '');
+    document.getElementById('address').value = short;
+    document.getElementById('addrMapHint').textContent = '✅ ' + short;
+  });
 }
 
 function toggleAddressMap() {
@@ -195,70 +203,120 @@ function toggleAddressMap() {
   } else {
     wrap.classList.add('open');
     btn.classList.add('active');
-    setTimeout(() => {
-      initAddressMap();
-      const existing = document.getElementById('address').value.trim();
-      if (existing && !addrMarker) geocodeAddress(existing);
+    setTimeout(function () {
+      ymaps.ready(function () {
+        initAddressMap();
+        const existing = document.getElementById('address').value.trim();
+        if (existing && !ymapMark) geocodeAddrY(existing);
+      });
     }, 350);
   }
 }
 
-async function geocodeAddress(query) {
-  try {
-    const url = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(query + ' Худжанд Таджикистан')}&format=json&limit=1&countrycodes=tj&accept-language=ru`;
-    const r = await fetch(url);
-    const d = await r.json();
-    if (d.length) placeAddrMarker(parseFloat(d[0].lat), parseFloat(d[0].lon), false);
-  } catch {}
+function geocodeAddrY(query) {
+  ymaps.geocode('Худжанд ' + query, { results: 1 }).then(function (res) {
+    const obj = res.geoObjects.get(0);
+    if (obj) placeAddrMark(obj.geometry.getCoordinates(), false);
+  });
 }
 
-async function searchAddrSuggestions(query) {
-  try {
-    const url = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(query + ' Худжанд')}&format=json&limit=5&countrycodes=tj&accept-language=ru&addressdetails=1`;
-    const r = await fetch(url);
-    const results = await r.json();
-    const el = document.getElementById('addrSuggestions');
-    if (!results.length) { el.style.display = 'none'; return; }
-    el.innerHTML = results.map(res => {
-      const a = res.address || {};
-      const main = [a.road || a.pedestrian || res.display_name.split(',')[0], a.house_number].filter(Boolean).join(' ');
-      const sub = [a.suburb || a.neighbourhood || a.city_district, a.city || a.town || 'Худжанд'].filter(Boolean).join(', ');
-      const short = main || res.display_name.split(',').slice(0, 2).join(',');
-      return `<div class="addr-sug-item" onclick="selectAddrSuggestion(${res.lat},${res.lon},'${short.replace(/'/g,"\\'").replace(/"/g,"&quot;")}')">
-        <div class="addr-sug-main">${main || res.display_name.split(',')[0]}</div>
-        <div class="addr-sug-sub">${sub}</div>
-      </div>`;
-    }).join('');
-    el.style.display = 'block';
-  } catch {}
+function searchAddrSuggestions(query) {
+  if (typeof ymaps === 'undefined') return;
+  ymaps.ready(function () {
+    ymaps.suggest('Худжанд ' + query, { results: 6 }).then(function (items) {
+      const el = document.getElementById('addrSuggestions');
+      if (!items || !items.length) { el.style.display = 'none'; return; }
+      el.innerHTML = items.map(function (item) {
+        const val  = item.value || '';
+        const short = val.replace('Таджикистан, Хучанд, ', '').replace('Таджикистан, Худжанд, ', '').replace('Таджикистан, ', '');
+        const parts = short.split(', ');
+        const main = parts[0] || short;
+        const sub  = parts.slice(1, 3).join(', ');
+        const safe = val.replace(/'/g, "\\'");
+        return `<div class="addr-sug-item" onclick="selectAddrSuggY('${safe}')">
+          <div class="addr-sug-main">${main}</div>
+          ${sub ? `<div class="addr-sug-sub">${sub}</div>` : ''}
+        </div>`;
+      }).join('');
+      el.style.display = 'block';
+    });
+  });
 }
 
-function selectAddrSuggestion(lat, lon, addr) {
-  document.getElementById('address').value = addr;
+function selectAddrSuggY(val) {
+  const short = val.replace('Таджикистан, Хучанд, ', '').replace('Таджикистан, Худжанд, ', '').replace('Таджикистан, ', '');
+  document.getElementById('address').value = short;
   document.getElementById('addrSuggestions').style.display = 'none';
+
   const wrap = document.getElementById('addrMapWrap');
   const btn  = document.getElementById('btnMapOpen');
-  if (!wrap.classList.contains('open')) {
-    wrap.classList.add('open');
-    btn.classList.add('active');
-    setTimeout(() => { initAddressMap(); placeAddrMarker(parseFloat(lat), parseFloat(lon), false); document.getElementById('addrMapHint').textContent = '✅ ' + addr; }, 350);
-  } else {
-    placeAddrMarker(parseFloat(lat), parseFloat(lon), false);
-    document.getElementById('addrMapHint').textContent = '✅ ' + addr;
-  }
+  ymaps.ready(function () {
+    ymaps.geocode(val, { results: 1 }).then(function (res) {
+      const obj = res.geoObjects.get(0);
+      if (!obj) return;
+      const coords = obj.geometry.getCoordinates();
+      if (!wrap.classList.contains('open')) {
+        wrap.classList.add('open');
+        btn.classList.add('active');
+        setTimeout(function () { initAddressMap(); setTimeout(() => placeAddrMark(coords, false), 100); }, 350);
+      } else {
+        placeAddrMark(coords, false);
+      }
+      document.getElementById('addrMapHint').textContent = '✅ ' + short;
+    });
+  });
 }
 
-document.addEventListener('DOMContentLoaded', () => {
+// Геокод без открытия карты — тихо ставит координаты и двигает маркер если карта открыта
+function silentGeocodeY(query) {
+  ymaps.ready(function () {
+    ymaps.geocode('Худжанд ' + query, { results: 1 }).then(function (res) {
+      const obj = res.geoObjects.get(0);
+      if (!obj) return;
+      const coords = obj.geometry.getCoordinates();
+      document.getElementById('addrLat').value = coords[0];
+      document.getElementById('addrLng').value = coords[1];
+      const mapWrap = document.getElementById('addrMapWrap');
+      if (ymap && mapWrap.classList.contains('open')) {
+        if (ymapMark) {
+          ymapMark.geometry.setCoordinates(coords);
+          ymap.setCenter(coords, 17, { duration: 300 });
+        } else {
+          placeAddrMark(coords, false);
+        }
+        document.getElementById('addrMapHint').textContent = '✅ ' + query;
+      }
+    });
+  });
+}
+
+document.addEventListener('DOMContentLoaded', function () {
+  // Если перешли с admin.html как водитель
+  const urlParams = new URLSearchParams(window.location.search);
+  if (urlParams.get('tab') === 'driver') {
+    history.replaceState({}, '', '/');
+    setTimeout(() => switchAppTab('driver'), 200);
+  }
+
   const addrInput = document.getElementById('address');
   if (addrInput) {
     addrInput.addEventListener('input', function () {
       clearTimeout(addrSearchTimer);
       const val = this.value.trim();
       if (val.length < 3) { document.getElementById('addrSuggestions').style.display = 'none'; return; }
-      addrSearchTimer = setTimeout(() => searchAddrSuggestions(val), 650);
+      addrSearchTimer = setTimeout(() => searchAddrSuggestions(val), 600);
+    });
+
+    // Авто-геокод когда пользователь уходит с поля, не выбрав подсказку
+    addrInput.addEventListener('blur', function () {
+      const val = this.value.trim();
+      const latField = document.getElementById('addrLat');
+      if (val.length >= 3 && !latField.value) {
+        silentGeocodeY(val);
+      }
     });
   }
-  document.addEventListener('click', e => {
+  document.addEventListener('click', function (e) {
     if (!e.target.closest('.addr-group')) document.getElementById('addrSuggestions').style.display = 'none';
   });
 });

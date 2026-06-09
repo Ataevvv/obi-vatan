@@ -196,10 +196,15 @@ function renderOrders(orders) {
         <div class="do-time">${time}</div>
       </div>
 
-      <div class="do-row">
+      <a class="do-row do-addr-link"
+         href="${o.lat && o.lng
+           ? `https://yandex.ru/maps/?pt=${o.lng},${o.lat}&z=17&l=map`
+           : `https://yandex.ru/maps/?text=${encodeURIComponent(o.address + ' Худжанд')}`}"
+         target="_blank" rel="noopener">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
         ${o.address}
-      </div>
+        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" style="opacity:.5;margin-left:3px;flex-shrink:0"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+      </a>
 
       <div class="do-bottles">💧 ${bottles.join(' + ')}</div>
 

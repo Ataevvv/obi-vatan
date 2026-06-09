@@ -19,6 +19,29 @@ body{font-family:'Inter','Segoe UI',sans-serif;background:var(--bg);color:var(--
 .login-field button:hover{background:var(--blue-dark)}
 .login-err{color:#dc2626;font-size:.8rem}
 
+/* ── ROLE SELECTION ── */
+.role-cards{display:flex;gap:16px;margin-top:4px}
+.role-card{
+  flex:1;display:flex;flex-direction:column;align-items:center;gap:10px;
+  padding:22px 12px;border:2px solid var(--border);border-radius:16px;
+  cursor:pointer;transition:all .2s;background:#fff;
+}
+.role-card:hover{border-color:var(--blue);box-shadow:0 4px 20px rgba(26,120,194,.15);transform:translateY(-2px)}
+.role-icon{
+  width:64px;height:64px;border-radius:50%;
+  background:linear-gradient(135deg,#eaf5ff,#c8dff5);
+  display:flex;align-items:center;justify-content:center;
+  color:var(--blue);
+}
+.driver-role-icon{background:linear-gradient(135deg,#fff7ed,#fddcba);color:#ea580c}
+.role-label{font-size:.88rem;font-weight:700;color:var(--blue-dark)}
+.btn-back-role{
+  display:inline-flex;align-items:center;gap:5px;
+  background:none;border:none;color:var(--muted);font-size:.82rem;
+  cursor:pointer;font-family:inherit;padding:4px 0;
+}
+.btn-back-role:hover{color:var(--blue)}
+
 /* ── LAYOUT ── */
 .admin{min-height:100vh;display:flex;flex-direction:column}
 
