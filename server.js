@@ -183,7 +183,7 @@ app.get('/api/orders', async (req, res) => {
 
 app.post('/api/orders', async (req, res) => {
   try {
-    const { name, phone, address, qty6, qty16, notes, total } = req.body;
+    const { name, phone, address, qty6, qty16, notes, total, lat, lng } = req.body;
     if (!name || !phone || !address) return res.status(400).json({ error: 'Заполните все поля' });
     if ((qty6 || 0) + (qty16 || 0) === 0) return res.status(400).json({ error: 'Выберите воду' });
 
@@ -194,7 +194,8 @@ app.post('/api/orders', async (req, res) => {
       notes: (notes || '').trim(),
       total: parseInt(total) || 0,
       status: 'new',
-      createdAt: new Date().toISOString()
+      createdAt: new Date().toISOString(),
+      ...(lat && lng ? { lat: parseFloat(lat), lng: parseFloat(lng) } : {})
     };
 
     const loyalty = await getLoyaltyInfo(order.phone);
@@ -284,9 +285,6 @@ app.get('/driver', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'driver.html'));
 });
 
-app.get('/track', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'track.html'));
-});
 
 // ─── Ежедневный отчёт в 17:00 ───
 let lastReportDate = null;

@@ -139,6 +139,129 @@ function createWaterEffect() {
 }
 createWaterEffect();
 
+// ── Карта для выбора адреса ──
+let addrMap = null;
+let addrMarker = null;
+let addrSearchTimer = null;
+const KHUJAND = [40.2833, 69.6333];
+
+function initAddressMap() {
+  if (addrMap) { addrMap.invalidateSize(); return; }
+  addrMap = L.map('addrMap', { zoomControl: true, attributionControl: false }).setView(KHUJAND, 15);
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19 }).addTo(addrMap);
+  addrMap.on('click', e => placeAddrMarker(e.latlng.lat, e.latlng.lng, true));
+}
+
+function placeAddrMarker(lat, lng, reverse) {
+  if (addrMarker) {
+    addrMarker.setLatLng([lat, lng]);
+  } else {
+    addrMarker = L.marker([lat, lng], { draggable: true }).addTo(addrMap);
+    addrMarker.on('dragend', () => {
+      const p = addrMarker.getLatLng();
+      document.getElementById('addrLat').value = p.lat;
+      document.getElementById('addrLng').value = p.lng;
+      reverseGeocode(p.lat, p.lng);
+    });
+  }
+  addrMap.setView([lat, lng], 17);
+  document.getElementById('addrLat').value = lat;
+  document.getElementById('addrLng').value = lng;
+  if (reverse) reverseGeocode(lat, lng);
+}
+
+async function reverseGeocode(lat, lng) {
+  try {
+    const r = await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json&accept-language=ru`);
+    const d = await r.json();
+    if (d.address) {
+      const a = d.address;
+      const parts = [a.road || a.pedestrian || a.path, a.house_number, a.suburb || a.neighbourhood].filter(Boolean);
+      const short = parts.join(', ') || d.display_name.split(', ').slice(0, 2).join(', ');
+      document.getElementById('address').value = short;
+      document.getElementById('addrMapHint').textContent = '✅ ' + short;
+    }
+  } catch {}
+}
+
+function toggleAddressMap() {
+  const wrap = document.getElementById('addrMapWrap');
+  const btn  = document.getElementById('btnMapOpen');
+  const open = wrap.classList.contains('open');
+  if (open) {
+    wrap.classList.remove('open');
+    btn.classList.remove('active');
+  } else {
+    wrap.classList.add('open');
+    btn.classList.add('active');
+    setTimeout(() => {
+      initAddressMap();
+      const existing = document.getElementById('address').value.trim();
+      if (existing && !addrMarker) geocodeAddress(existing);
+    }, 350);
+  }
+}
+
+async function geocodeAddress(query) {
+  try {
+    const url = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(query + ' Худжанд Таджикистан')}&format=json&limit=1&countrycodes=tj&accept-language=ru`;
+    const r = await fetch(url);
+    const d = await r.json();
+    if (d.length) placeAddrMarker(parseFloat(d[0].lat), parseFloat(d[0].lon), false);
+  } catch {}
+}
+
+async function searchAddrSuggestions(query) {
+  try {
+    const url = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(query + ' Худжанд')}&format=json&limit=5&countrycodes=tj&accept-language=ru&addressdetails=1`;
+    const r = await fetch(url);
+    const results = await r.json();
+    const el = document.getElementById('addrSuggestions');
+    if (!results.length) { el.style.display = 'none'; return; }
+    el.innerHTML = results.map(res => {
+      const a = res.address || {};
+      const main = [a.road || a.pedestrian || res.display_name.split(',')[0], a.house_number].filter(Boolean).join(' ');
+      const sub = [a.suburb || a.neighbourhood || a.city_district, a.city || a.town || 'Худжанд'].filter(Boolean).join(', ');
+      const short = main || res.display_name.split(',').slice(0, 2).join(',');
+      return `<div class="addr-sug-item" onclick="selectAddrSuggestion(${res.lat},${res.lon},'${short.replace(/'/g,"\\'").replace(/"/g,"&quot;")}')">
+        <div class="addr-sug-main">${main || res.display_name.split(',')[0]}</div>
+        <div class="addr-sug-sub">${sub}</div>
+      </div>`;
+    }).join('');
+    el.style.display = 'block';
+  } catch {}
+}
+
+function selectAddrSuggestion(lat, lon, addr) {
+  document.getElementById('address').value = addr;
+  document.getElementById('addrSuggestions').style.display = 'none';
+  const wrap = document.getElementById('addrMapWrap');
+  const btn  = document.getElementById('btnMapOpen');
+  if (!wrap.classList.contains('open')) {
+    wrap.classList.add('open');
+    btn.classList.add('active');
+    setTimeout(() => { initAddressMap(); placeAddrMarker(parseFloat(lat), parseFloat(lon), false); document.getElementById('addrMapHint').textContent = '✅ ' + addr; }, 350);
+  } else {
+    placeAddrMarker(parseFloat(lat), parseFloat(lon), false);
+    document.getElementById('addrMapHint').textContent = '✅ ' + addr;
+  }
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  const addrInput = document.getElementById('address');
+  if (addrInput) {
+    addrInput.addEventListener('input', function () {
+      clearTimeout(addrSearchTimer);
+      const val = this.value.trim();
+      if (val.length < 3) { document.getElementById('addrSuggestions').style.display = 'none'; return; }
+      addrSearchTimer = setTimeout(() => searchAddrSuggestions(val), 650);
+    });
+  }
+  document.addEventListener('click', e => {
+    if (!e.target.closest('.addr-group')) document.getElementById('addrSuggestions').style.display = 'none';
+  });
+});
+
 // ── Qty controls ──
 function changeQty(id, delta) {
   qty[id] = Math.max(0, qty[id] + delta);
@@ -212,6 +335,8 @@ document.getElementById('orderForm').addEventListener('submit', async function (
   const address = document.getElementById('address').value.trim();
   const notes = document.getElementById('notes').value.trim();
   const total = qty.qty6 * PRICE_6 + qty.qty16 * PRICE_16;
+  const lat = document.getElementById('addrLat').value || null;
+  const lng = document.getElementById('addrLng').value || null;
 
   const btn = document.getElementById('submitBtn');
   document.getElementById('btnText').textContent = 'Отправляем...';
@@ -221,7 +346,7 @@ document.getElementById('orderForm').addEventListener('submit', async function (
     const res = await fetch('/api/orders', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ name, phone, address, qty6: qty.qty6, qty16: qty.qty16, notes, total })
+      body: JSON.stringify({ name, phone, address, qty6: qty.qty6, qty16: qty.qty16, notes, total, lat, lng })
     });
 
     if (res.ok) {

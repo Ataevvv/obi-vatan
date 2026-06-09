@@ -7,6 +7,7 @@
   <link rel="stylesheet" href="style.css"/>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet"/>
   <link rel="manifest" href="/manifest.json"/>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
   <meta name="theme-color" content="#1a78c2"/>
   <meta name="mobile-web-app-capable" content="yes"/>
   <meta name="apple-mobile-web-app-capable" content="yes"/>
@@ -403,7 +404,23 @@
           <div class="fg"><label>Имя *</label><input type="text" id="name" placeholder="Ваше имя" required/></div>
           <div class="fg"><label>Телефон *</label><input type="tel" id="phone" placeholder="+992 XX XXX XXXX" required/></div>
         </div>
-        <div class="fg"><label>Адрес доставки *</label><input type="text" id="address" placeholder="Улица, дом, квартира" required/></div>
+        <div class="fg addr-group">
+          <label>Адрес доставки *</label>
+          <div class="addr-input-row">
+            <input type="text" id="address" placeholder="Улица, дом, квартира" required autocomplete="off"/>
+            <button type="button" class="btn-map-open" id="btnMapOpen" onclick="toggleAddressMap()">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+              На карте
+            </button>
+          </div>
+          <div class="addr-suggestions" id="addrSuggestions"></div>
+          <div class="addr-map-wrap" id="addrMapWrap">
+            <div id="addrMap"></div>
+            <div class="addr-map-hint" id="addrMapHint">Нажмите на карте или перетащите метку — адрес заполнится автоматически</div>
+          </div>
+        </div>
+        <input type="hidden" id="addrLat"/>
+        <input type="hidden" id="addrLng"/>
         <div class="qty-section">
           <div class="qty-row">
             <div><div class="qr-name">6-литровая</div><div class="qr-price">7 сомон / шт</div></div>
@@ -445,7 +462,6 @@
     <div class="sb-note">📱 SMS придёт на ваш номер после того, как водитель примет заказ</div>
     <div class="sb-btns">
       <button class="btn-nav full-btn" onclick="closeSuccess()">Отлично, спасибо!</button>
-      <a class="btn-track" id="trackLink" href="/track" target="_blank">🔍 Отследить заказ</a>
     </div>
   </div>
 </div>
@@ -467,6 +483,7 @@
   <div class="footer-copy"><div class="container">© 2025 Оби Ватан · Все права защищены</div></div>
 </footer>
 
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script src="script.js"></script>
 </body>
 </html>
