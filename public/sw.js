@@ -47,7 +47,7 @@ self.addEventListener('push', e => {
     vibrate: [200, 100, 200, 100, 200],
     tag:     data.orderId || 'obi-push',
     renotify: true,
-    data:    { url: data.url || '/driver' }
+    data:    { url: data.url || '/admin' }
   };
   e.waitUntil(self.registration.showNotification(title, options));
 });

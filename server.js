@@ -270,7 +270,7 @@ app.post('/api/orders/:id/assign', async (req, res) => {
           body: `${order.name} · ${order.address} · ${order.total} сомон`,
           bottles: bottles.join(' + '),
           orderId: order.id,
-          url: '/driver'
+          url: '/admin'
         });
       }
     }
@@ -328,7 +328,7 @@ app.get('/admin', (req, res) => {
 });
 
 app.get('/driver', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'driver.html'));
+  res.redirect('/admin');
 });
 
 
