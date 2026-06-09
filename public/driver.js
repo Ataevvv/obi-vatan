@@ -135,36 +135,38 @@ function changeDriver() {
 
 async function loadOrders() {
   if (!currentDriver) return;
+  const el = document.getElementById('drMain');
   try {
     const res = await fetch('/api/orders');
+    if (!res.ok) throw new Error('HTTP ' + res.status);
     const all = await res.json();
 
-    const today = new Date().toDateString();
+    // Показываем заказы за последние 24 часа, не только сегодня
+    const cutoff = Date.now() - 24 * 60 * 60 * 1000;
     const mine = all.filter(o =>
       o.assignedDriver === currentDriver &&
       (o.status === 'new' || o.status === 'delivering') &&
-      new Date(o.createdAt).toDateString() === today
+      new Date(o.createdAt).getTime() > cutoff
     );
 
-    // История — доставленные сегодня
     const done = all.filter(o =>
       o.assignedDriver === currentDriver &&
       o.status === 'delivered' &&
-      new Date(o.createdAt).toDateString() === today
+      new Date(o.createdAt).getTime() > cutoff
     );
+
     renderHistory(done);
 
-    // Проверяем новые заказы
     const newOnes = mine.filter(o => !knownOrderIds.has(o.id));
-    if (knownOrderIds.size > 0 && newOnes.length > 0) {
-      playSound();
-    }
+    if (knownOrderIds.size > 0 && newOnes.length > 0) playSound();
     mine.forEach(o => knownOrderIds.add(o.id));
 
     renderOrders(mine);
-  } catch {
-    document.getElementById('drMain').innerHTML =
-      '<div class="dr-loading">Нет соединения...</div>';
+  } catch (e) {
+    el.innerHTML = `<div class="dr-loading" style="color:#f59e0b">
+      ⏳ Сервер запускается...<br>
+      <span style="font-size:.78rem;opacity:.7">Подождите 30–60 секунд</span>
+    </div>`;
   }
 }
 

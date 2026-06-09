@@ -384,4 +384,12 @@ const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`🚀 Оби Ватан: http://localhost:${PORT}`);
   connectDB().catch(console.error);
+
+  // Пинг каждые 10 минут чтобы сервер не засыпал на Render
+  const APP_URL = process.env.RENDER_EXTERNAL_URL || `http://localhost:${PORT}`;
+  setInterval(() => {
+    https.get(APP_URL + '/api/ping', () => {}).on('error', () => {});
+  }, 10 * 60 * 1000);
 });
+
+app.get('/api/ping', (req, res) => res.json({ ok: true }));
