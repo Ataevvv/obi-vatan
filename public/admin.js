@@ -47,7 +47,7 @@ function switchTab(tab) {
   document.getElementById('dispatchPanel').style.display = tab === 'dispatch' ? '' : 'none';
   document.getElementById('archivePanel').style.display  = tab === 'archive'  ? '' : 'none';
   if (tab === 'dispatch') renderDispatcher(allOrders);
-  if (tab === 'archive')  renderArchive();
+  if (tab === 'archive')  { loadData(); }
 }
 
 // ── Load ──
@@ -63,6 +63,7 @@ async function loadData() {
     renderDriverStats(allOrders);
     renderClientsStats(clients);
     if (activeTab === 'dispatch') renderDispatcher(allOrders);
+    if (activeTab === 'archive')  renderArchive();
     updateDispatchBadge(allOrders);
   } catch {
     console.error('Ошибка загрузки');
