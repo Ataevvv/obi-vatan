@@ -156,7 +156,7 @@ async function loadOrders() {
     if (knownOrderIds.size > 0 && newOnes.length > 0) playSound();
     mine.forEach(o => knownOrderIds.add(o.id));
 
-    renderOrders(mine);
+    renderDriverOrders(mine);
   } catch (e) {
     el.innerHTML = `<div class="dr-loading" style="color:#f59e0b">
       ⏳ Сервер запускается...<br>
@@ -165,7 +165,7 @@ async function loadOrders() {
   }
 }
 
-function renderOrders(orders) {
+function renderDriverOrders(orders) {
   const el = document.getElementById('drMain');
 
   if (orders.length === 0) {

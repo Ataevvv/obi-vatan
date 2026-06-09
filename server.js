@@ -1,7 +1,6 @@
 require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
-const TelegramBot = require('node-telegram-bot-api');
 const { MongoClient } = require('mongodb');
 const path = require('path');
 const { randomUUID } = require('crypto');
@@ -14,8 +13,6 @@ app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
 app.use('/media', express.static(path.join(__dirname, 'image')));
 
-const BOT_TOKEN   = process.env.TELEGRAM_BOT_TOKEN;
-const CHAT_ID     = process.env.TELEGRAM_CHAT_ID;
 const ESKIZ_EMAIL    = process.env.ESKIZ_EMAIL;
 const ESKIZ_PASSWORD = process.env.ESKIZ_PASSWORD;
 const MONGODB_URI    = process.env.MONGODB_URI;
@@ -32,14 +29,6 @@ if (!VAPID_PUBLIC || !VAPID_PRIVATE) {
   console.log('VAPID_PRIVATE_KEY=' + VAPID_PRIVATE);
 }
 webpush.setVapidDetails('mailto:obi@vatan.tj', VAPID_PUBLIC, VAPID_PRIVATE);
-
-// Telegram ID каждого водителя — добавляй по мере получения
-const DRIVER_IDS = {
-  'Алишер': '5805237043',
-  'Бахром':  null,
-  'Санжар':  null,
-  'Достон':  null,
-};
 
 // ─── MongoDB ───
 let db = null;
@@ -121,61 +110,6 @@ async function getLoyaltyInfo(phone) {
   return { orderCount: count, nextFreeAt, isFreeOrder };
 }
 
-// ─── Telegram Bot ───
-let bot = null;
-if (BOT_TOKEN && BOT_TOKEN !== 'YOUR_BOT_TOKEN') {
-  bot = new TelegramBot(BOT_TOKEN, {
-    polling: { params: { allowed_updates: JSON.stringify(['callback_query']) } }
-  });
-  console.log('✅ Telegram бот готов');
-
-  bot.on('callback_query', async (query) => {
-    const [action, orderId] = query.data.split(':');
-    if (action !== 'done') return;
-
-    try {
-      await updateOrder(orderId, { status: 'delivered', deliveredAt: new Date().toISOString() });
-      const driverName = query.from.first_name || 'Водитель';
-
-      bot.editMessageReplyMarkup({ inline_keyboard: [] }, {
-        chat_id: query.message.chat.id,
-        message_id: query.message.message_id
-      }).catch(() => {});
-
-      bot.answerCallbackQuery(query.id, { text: '✅ Отлично! Заказ доставлен!' });
-
-      // Уведомление диспетчеру
-      if (CHAT_ID) {
-        const orders = await getOrders();
-        const order = orders.find(o => o.id === orderId);
-        if (order) {
-          bot.sendMessage(CHAT_ID,
-            `✅ *Доставлено — ${driverName}*\n👤 ${order.name} · 📍 ${order.address}\n💰 *${order.total} сомон*`,
-            { parse_mode: 'Markdown' }
-          ).catch(() => {});
-        }
-      }
-    } catch (e) { console.error('Delivered error:', e.message); }
-  });
-}
-
-function sendTelegramOrder(order) {
-  if (!bot || !CHAT_ID) return;
-  const bottles = [];
-  if (order.qty6  > 0) bottles.push(`🫙 6Л × ${order.qty6}  = ${order.qty6  * 7}  сом`);
-  if (order.qty16 > 0) bottles.push(`🫙 19Л × ${order.qty16} = ${order.qty16 * 20} сом`);
-
-  const msg = `🆕 *НОВЫЙ ЗАКАЗ*
-👤 ${order.name}
-📞 ${order.phone}
-📍 ${order.address}
-${bottles.join('\n')}
-💰 *${order.total} сомон*${order.freeBottle ? '\n🎁 10-й заказ — 6Л бесплатно!' : ''}${order.notes ? `\n💬 ${order.notes}` : ''}`;
-
-  bot.sendMessage(CHAT_ID, msg, { parse_mode: 'Markdown' })
-    .catch(err => console.error('Telegram error:', err.message));
-}
-
 // ─── SMS via Eskiz ───
 let eskizToken = null, eskizTokenTime = 0;
 
@@ -241,7 +175,6 @@ app.post('/api/orders', async (req, res) => {
 
     await insertOrder(order);
     await upsertClient(order);
-    sendTelegramOrder(order);
     console.log(`✅ Заказ: ${order.name} — ${order.total} сомон`);
     res.status(201).json({ success: true, id: order.id });
   } catch (e) {
@@ -331,54 +264,6 @@ app.get('/driver', (req, res) => {
   res.redirect('/admin');
 });
 
-
-// ─── Ежедневный отчёт в 17:00 ───
-let lastReportDate = null;
-
-async function sendDailyReport() {
-  if (!bot || !CHAT_ID) return;
-  try {
-    const orders = await getOrders();
-    const today = new Date().toDateString();
-    const todayOrders = orders.filter(o => new Date(o.createdAt).toDateString() === today);
-    const delivered = todayOrders.filter(o => o.status === 'delivered');
-    const revenue = delivered.reduce((s, o) => s + o.total, 0);
-
-    const driverMap = {};
-    delivered.forEach(o => {
-      const d = o.assignedDriver || 'Не назначен';
-      if (!driverMap[d]) driverMap[d] = { count: 0, revenue: 0 };
-      driverMap[d].count++;
-      driverMap[d].revenue += o.total;
-    });
-
-    const driverLines = Object.entries(driverMap)
-      .map(([name, s]) => `  🚗 ${name}: ${s.count} дост. · ${s.revenue} сом`)
-      .join('\n') || '  Нет данных';
-
-    const msg = `📊 *Итог дня — ${new Date().toLocaleDateString('ru-RU', {day:'numeric',month:'long'})}*
-━━━━━━━━━━━━━━━━
-📦 Всего заказов: ${todayOrders.length}
-✅ Доставлено: ${delivered.length}
-❌ Отменено: ${todayOrders.filter(o => o.status === 'cancelled').length}
-💰 *Выручка: ${revenue} сомон*
-━━━━━━━━━━━━━━━━
-*Водители:*
-${driverLines}`;
-
-    bot.sendMessage(CHAT_ID, msg, { parse_mode: 'Markdown' });
-    console.log('📊 Ежедневный отчёт отправлен');
-  } catch (e) { console.error('Report error:', e.message); }
-}
-
-setInterval(() => {
-  const now = new Date();
-  const today = now.toDateString();
-  if (now.getHours() === 17 && now.getMinutes() === 0 && lastReportDate !== today) {
-    lastReportDate = today;
-    sendDailyReport();
-  }
-}, 60000);
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
