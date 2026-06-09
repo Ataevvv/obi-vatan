@@ -306,6 +306,84 @@ body{font-family:'Inter','Segoe UI',sans-serif;background:var(--bg);color:var(--
 }
 .dc-empty svg{margin-bottom:10px;opacity:.25}
 
+/* ── DISPATCHER SECTIONS ── */
+.ds-section { margin-bottom: 24px; }
+.ds-section-title {
+  display: flex; align-items: center; gap: 7px;
+  font-size: .82rem; font-weight: 700; color: var(--blue-dark);
+  margin-bottom: 12px; padding-bottom: 8px;
+  border-bottom: 1.5px solid var(--border);
+}
+.ds-count {
+  margin-left: auto;
+  background: #3b82f6; color: #fff;
+  font-size: .65rem; font-weight: 800;
+  min-width: 20px; height: 20px; border-radius: 10px;
+  display: inline-flex; align-items: center; justify-content: center; padding: 0 5px;
+}
+.ds-count-orange { background: #f97316; }
+
+.dispatch-map-wrap { margin-bottom: 20px; }
+#dispatchMap { height: 280px; border-radius: 12px; border: 1px solid var(--border); }
+
+.dc-card.in-progress { border-left: 4px solid #f97316; background: #fffbeb; }
+.dc-inprog {
+  display: flex; align-items: center; justify-content: space-between; gap: 8px;
+  padding: 7px 0; border-top: 1px solid var(--border); margin-top: 2px;
+}
+.dc-drv-name { font-size: .78rem; font-weight: 700; color: #ea580c; }
+.dc-inprog-btns { display: flex; gap: 6px; }
+.dc-change-btn {
+  padding: 4px 10px; background: var(--blue-pale); border: 1px solid #c8dff5;
+  border-radius: 6px; cursor: pointer; font-size: .72rem; font-weight: 700;
+  color: var(--blue); font-family: inherit;
+}
+.dc-cancel-btn {
+  padding: 4px 10px; background: #fef2f2; border: 1px solid #fca5a5;
+  border-radius: 6px; cursor: pointer; font-size: .72rem; font-weight: 700;
+  color: #dc2626; font-family: inherit;
+}
+.dc-change-drivers {
+  display: grid; grid-template-columns: repeat(4, 1fr); gap: 5px;
+  padding: 6px 0; border-top: 1px dashed var(--border);
+}
+.dc-notes { font-size: .73rem; color: var(--muted); padding: 4px 0; }
+
+/* ── ARCHIVE ── */
+.archive-bar {
+  display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
+  background: #fff; border: 1px solid var(--border); border-radius: 12px;
+  padding: 12px 16px; margin-bottom: 16px;
+}
+.af-period { display: flex; gap: 4px; }
+.af-btn {
+  padding: 6px 14px; border: 1.5px solid var(--border);
+  border-radius: 8px; background: #fff; cursor: pointer;
+  font-size: .78rem; font-weight: 600; color: var(--muted);
+  font-family: inherit; transition: all .15s;
+}
+.af-btn:hover { border-color: var(--blue); color: var(--blue); }
+.af-btn.active { background: var(--blue); border-color: var(--blue); color: #fff; }
+.af-selects { display: flex; gap: 8px; margin-left: auto; }
+.af-selects select {
+  padding: 6px 10px; border: 1.5px solid var(--border); border-radius: 8px;
+  font-size: .78rem; font-family: inherit; color: var(--text); background: #fff;
+  cursor: pointer; outline: none;
+}
+.archive-stats-row {
+  display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px;
+  margin-bottom: 16px;
+}
+.ar-stat {
+  background: #fff; border: 1px solid var(--border); border-radius: 10px;
+  padding: 12px 14px; text-align: center;
+}
+.ars-val { font-size: 1.25rem; font-weight: 900; color: var(--blue-dark); }
+.ars-val.green { color: var(--green); }
+.ars-val.blue { color: var(--blue); font-size: 1rem; }
+.ars-name { font-size: .7rem; color: var(--muted); margin-top: 2px; }
+.oc-phone { font-size: .72rem; font-weight: 400; color: var(--muted); margin-left: 6px; }
+
 /* ── RESPONSIVE ── */
 @media(max-width:1100px){.stats-row{grid-template-columns:repeat(3,1fr)}}
 @media(max-width:800px){

@@ -1,34 +1,50 @@
 {
   "name": "Оби Ватан — Доставка воды",
   "short_name": "Оби Ватан",
-  "description": "Заказ горной воды с доставкой по Худжанду",
+  "description": "Заказ чистой горной воды с доставкой по Худжанду",
   "start_url": "/",
+  "scope": "/",
   "display": "standalone",
-  "orientation": "portrait",
+  "display_override": ["standalone", "minimal-ui"],
+  "orientation": "portrait-primary",
   "background_color": "#000c1e",
   "theme_color": "#1a78c2",
   "lang": "ru",
+  "id": "/",
   "icons": [
     {
       "src": "/icon-app-192.png",
       "sizes": "192x192",
       "type": "image/png",
-      "purpose": "any maskable"
+      "purpose": "any"
+    },
+    {
+      "src": "/icon-app-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable"
     },
     {
       "src": "/icon-app-512.png",
       "sizes": "512x512",
       "type": "image/png",
-      "purpose": "any maskable"
+      "purpose": "any"
+    },
+    {
+      "src": "/icon-app-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
     }
   ],
   "shortcuts": [
     {
       "name": "Заказать воду",
+      "short_name": "Заказать",
       "url": "/#order",
-      "description": "Оформить заказ"
+      "icons": [{ "src": "/icon-app-192.png", "sizes": "192x192" }]
     }
   ],
-  "categories": ["food", "shopping"],
-  "screenshots": []
+  "categories": ["food", "shopping", "utilities"],
+  "prefer_related_applications": false
 }

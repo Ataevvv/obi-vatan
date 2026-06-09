@@ -12,6 +12,7 @@
   <meta name="apple-mobile-web-app-title" content="ОВ Админ"/>
   <link rel="apple-touch-icon" href="/icon-admin.svg"/>
   <link rel="stylesheet" href="admin.css"/>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
 </head>
 <body>
@@ -60,6 +61,10 @@
       <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><rect x="1" y="3" width="15" height="13" rx="2"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>
       Диспетчер
       <span class="tab-badge" id="dispatchBadge" style="display:none"></span>
+    </button>
+    <button class="a-tab" onclick="switchTab('archive')">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="21 8 21 21 3 21 3 8"/><rect x="1" y="3" width="22" height="5" rx="1"/><line x1="10" y1="12" x2="14" y2="12"/></svg>
+      Архив
     </button>
   </div>
 
@@ -171,16 +176,69 @@
 
     <!-- DISPATCHER -->
     <div id="dispatchPanel" style="display:none">
-      <div class="dispatch-header">
-        <h3>Новые заказы — назначение водителя</h3>
-        <span class="dispatch-hint">Нажмите на водителя чтобы назначить заказ</span>
+
+      <!-- Карта активных заказов -->
+      <div class="dispatch-map-wrap" id="dispatchMapWrap" style="display:none">
+        <div class="ds-section-title">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+          Карта заказов
+        </div>
+        <div id="dispatchMap"></div>
       </div>
-      <div class="dispatch-grid" id="dispatchGrid"></div>
+
+      <!-- Новые / без водителя -->
+      <div class="ds-section">
+        <div class="ds-section-title">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+          Ожидают назначения
+          <span class="ds-count" id="unassignedCount">0</span>
+        </div>
+        <div class="dispatch-grid" id="dispatchGrid"></div>
+      </div>
+
+      <!-- В работе — назначены, не доставлены -->
+      <div class="ds-section" id="inProgressSection">
+        <div class="ds-section-title">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><rect x="1" y="3" width="15" height="13" rx="2"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>
+          В работе
+          <span class="ds-count ds-count-orange" id="inProgressCount">0</span>
+        </div>
+        <div class="dispatch-grid" id="inProgressGrid"></div>
+      </div>
+
+    </div>
+
+    <!-- ARCHIVE -->
+    <div id="archivePanel" style="display:none">
+      <div class="archive-bar">
+        <div class="af-period" id="afPeriod">
+          <button class="af-btn active" onclick="setArchivePeriod('today',this)">Сегодня</button>
+          <button class="af-btn" onclick="setArchivePeriod('week',this)">Неделя</button>
+          <button class="af-btn" onclick="setArchivePeriod('month',this)">Месяц</button>
+          <button class="af-btn" onclick="setArchivePeriod('all',this)">Все</button>
+        </div>
+        <div class="af-selects">
+          <select id="afDriver" onchange="renderArchive()">
+            <option value="">Все водители</option>
+            <option>Алишер</option><option>Бахром</option><option>Санжар</option><option>Достон</option>
+          </select>
+          <select id="afStatus" onchange="renderArchive()">
+            <option value="">Все статусы</option>
+            <option value="new">Новый</option>
+            <option value="delivering">В пути</option>
+            <option value="delivered">Доставлен</option>
+            <option value="cancelled">Отменён</option>
+          </select>
+        </div>
+      </div>
+      <div class="archive-stats-row" id="archiveStats"></div>
+      <div id="archiveList"></div>
     </div>
 
   </main>
 </div>
 
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script src="admin.js"></script>
 <script>
   if ('serviceWorker' in navigator) {

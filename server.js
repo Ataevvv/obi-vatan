@@ -6,6 +6,7 @@ const { MongoClient } = require('mongodb');
 const path = require('path');
 const { randomUUID } = require('crypto');
 const https = require('https');
+const webpush = require('web-push');
 
 const app = express();
 app.use(cors());
@@ -18,6 +19,19 @@ const CHAT_ID     = process.env.TELEGRAM_CHAT_ID;
 const ESKIZ_EMAIL    = process.env.ESKIZ_EMAIL;
 const ESKIZ_PASSWORD = process.env.ESKIZ_PASSWORD;
 const MONGODB_URI    = process.env.MONGODB_URI;
+
+// ─── Web Push (VAPID) ───
+let VAPID_PUBLIC  = process.env.VAPID_PUBLIC_KEY;
+let VAPID_PRIVATE = process.env.VAPID_PRIVATE_KEY;
+if (!VAPID_PUBLIC || !VAPID_PRIVATE) {
+  const keys = webpush.generateVAPIDKeys();
+  VAPID_PUBLIC  = keys.publicKey;
+  VAPID_PRIVATE = keys.privateKey;
+  console.log('⚠️  Добавь в Render env vars:');
+  console.log('VAPID_PUBLIC_KEY=' + VAPID_PUBLIC);
+  console.log('VAPID_PRIVATE_KEY=' + VAPID_PRIVATE);
+}
+webpush.setVapidDetails('mailto:obi@vatan.tj', VAPID_PUBLIC, VAPID_PRIVATE);
 
 // Telegram ID каждого водителя — добавляй по мере получения
 const DRIVER_IDS = {
@@ -52,6 +66,30 @@ async function insertOrder(order) {
 async function updateOrder(id, update) {
   const d = await connectDB();
   await d.collection('orders').updateOne({ id }, { $set: update });
+}
+
+async function savePushSub(driverName, subscription) {
+  const d = await connectDB();
+  await d.collection('pushSubs').updateOne(
+    { driverName },
+    { $set: { driverName, subscription, updatedAt: new Date().toISOString() } },
+    { upsert: true }
+  );
+}
+
+async function sendPush(driverName, payload) {
+  try {
+    const d = await connectDB();
+    const doc = await d.collection('pushSubs').findOne({ driverName });
+    if (!doc?.subscription) return;
+    await webpush.sendNotification(doc.subscription, JSON.stringify(payload));
+  } catch (e) {
+    if (e.statusCode === 410 || e.statusCode === 404) {
+      const d = await connectDB();
+      await d.collection('pushSubs').deleteOne({ driverName });
+    }
+    console.error('Push error:', e.message);
+  }
 }
 
 async function getClients() {
@@ -219,37 +257,21 @@ app.post('/api/orders/:id/assign', async (req, res) => {
       assignedAt: driver ? new Date().toISOString() : null
     });
 
-    // Отправляем сообщение водителю в Telegram
-    if (driver && bot && DRIVER_IDS[driver]) {
+    // Push уведомление водителю
+    if (driver) {
       const orders = await getOrders();
       const order = orders.find(o => o.id === req.params.id);
       if (order) {
         const bottles = [];
         if (order.qty6  > 0) bottles.push(`${order.qty6}×6Л`);
         if (order.qty16 > 0) bottles.push(`${order.qty16}×19Л`);
-        const mapsLink = `https://maps.google.com/?q=${encodeURIComponent(order.address)}`;
-
-        const msg = `🚚 *Новый заказ для тебя!*
-👤 ${order.name}
-📞 ${order.phone}
-📍 ${order.address}
-💧 ${bottles.join(' + ')}
-💰 *${order.total} сомон*${order.notes ? `\n💬 ${order.notes}` : ''}`;
-
-        bot.sendMessage(DRIVER_IDS[driver], msg, {
-          parse_mode: 'Markdown',
-          reply_markup: {
-            inline_keyboard: [
-              [
-                { text: '🗺 Навигация', url: mapsLink },
-                { text: '📞 Позвонить', url: `tel:${order.phone}` }
-              ],
-              [
-                { text: '✅ Доставлен', callback_data: `done:${order.id}` }
-              ]
-            ]
-          }
-        }).catch(err => console.error('Driver TG error:', err.message));
+        await sendPush(driver, {
+          title: '🚚 Новый заказ!',
+          body: `${order.name} · ${order.address} · ${order.total} сомон`,
+          bottles: bottles.join(' + '),
+          orderId: order.id,
+          url: '/driver'
+        });
       }
     }
 
@@ -275,6 +297,20 @@ app.get('/api/clients', async (req, res) => {
 app.get('/api/loyalty/:phone', async (req, res) => {
   try { res.json(await getLoyaltyInfo(req.params.phone)); }
   catch (e) { res.status(500).json({ error: e.message }); }
+});
+
+// ─── Push API ───
+app.get('/api/push/vapid-public', (req, res) => {
+  res.json({ key: VAPID_PUBLIC });
+});
+
+app.post('/api/push/subscribe', async (req, res) => {
+  try {
+    const { driverName, subscription } = req.body;
+    if (!driverName || !subscription) return res.status(400).json({ error: 'Missing data' });
+    await savePushSub(driverName, subscription);
+    res.json({ success: true });
+  } catch (e) { res.status(500).json({ error: e.message }); }
 });
 
 app.get('/admin', (req, res) => {

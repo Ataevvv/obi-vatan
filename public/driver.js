@@ -87,6 +87,40 @@ function selectDriver(name) {
   document.getElementById('driverName').textContent = name;
   loadOrders();
   refreshTimer = setInterval(loadOrders, 5000);
+  subscribeToPush(name);
+}
+
+// ─── Push подписка ───
+function urlB64ToUint8Array(b64) {
+  const pad = '='.repeat((4 - b64.length % 4) % 4);
+  const base64 = (b64 + pad).replace(/-/g, '+').replace(/_/g, '/');
+  const raw = atob(base64);
+  return Uint8Array.from([...raw].map(c => c.charCodeAt(0)));
+}
+
+async function subscribeToPush(driverName) {
+  if (!('serviceWorker' in navigator) || !('PushManager' in window)) return;
+  try {
+    const perm = await Notification.requestPermission();
+    if (perm !== 'granted') return;
+
+    const reg = await navigator.serviceWorker.ready;
+    const { key } = await fetch('/api/push/vapid-public').then(r => r.json());
+
+    const sub = await reg.pushManager.subscribe({
+      userVisibleOnly: true,
+      applicationServerKey: urlB64ToUint8Array(key)
+    });
+
+    await fetch('/api/push/subscribe', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ driverName, subscription: sub })
+    });
+    console.log('✅ Push подписка активна для', driverName);
+  } catch (e) {
+    console.log('Push подписка недоступна:', e.message);
+  }
 }
 
 function changeDriver() {

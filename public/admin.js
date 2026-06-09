@@ -39,12 +39,15 @@ function initAdmin() {
 // ── Tabs ──
 function switchTab(tab) {
   activeTab = tab;
-  document.querySelectorAll('.a-tab').forEach(b => b.classList.remove('active'));
-  document.querySelectorAll('.a-tab')[tab === 'orders' ? 0 : 1].classList.add('active');
-  document.querySelector('.stats-row').style.display = tab === 'orders' ? '' : 'none';
-  document.querySelector('.charts-row').style.display = tab === 'orders' ? '' : 'none';
+  document.querySelectorAll('.a-tab').forEach((b, i) => {
+    b.classList.toggle('active', (i === 0 && tab === 'orders') || (i === 1 && tab === 'dispatch') || (i === 2 && tab === 'archive'));
+  });
+  document.querySelector('.stats-row').style.display    = tab === 'orders'   ? '' : 'none';
+  document.querySelector('.charts-row').style.display   = tab === 'orders'   ? '' : 'none';
   document.getElementById('dispatchPanel').style.display = tab === 'dispatch' ? '' : 'none';
+  document.getElementById('archivePanel').style.display  = tab === 'archive'  ? '' : 'none';
   if (tab === 'dispatch') renderDispatcher(allOrders);
+  if (tab === 'archive')  renderArchive();
 }
 
 // ── Load ──
@@ -227,33 +230,49 @@ function renderDriverStats(orders) {
 }
 
 // ── Dispatcher ──
-function renderDispatcher(orders) {
-  const today = new Date().toDateString();
-  const pending = orders
-    .filter(o => new Date(o.createdAt).toDateString() === today && o.status === 'new')
-    .reverse();
+let dispatchMap = null;
+let dispatchMarkers = [];
+let archivePeriod = 'today';
 
-  const el = document.getElementById('dispatchGrid');
+function renderDispatcher(orders) {
+  const unassigned = orders.filter(o => o.status === 'new' && !o.assignedDriver);
+  const inProgress = orders.filter(o => (o.status === 'new' && o.assignedDriver) || o.status === 'delivering');
+
+  document.getElementById('unassignedCount').textContent = unassigned.length;
+  document.getElementById('inProgressCount').textContent = inProgress.length;
+
+  renderDispatchGrid('dispatchGrid', unassigned, false);
+  renderDispatchGrid('inProgressGrid', inProgress, true);
+  renderDispatchMap([...unassigned, ...inProgress]);
+}
+
+function renderDispatchGrid(elId, orders, isInProgress) {
+  const el = document.getElementById(elId);
   if (!el) return;
 
-  if (pending.length === 0) {
-    el.innerHTML = `<div class="dc-empty">
-      <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
-      <p>Нет новых заказов для распределения</p>
-    </div>`;
+  if (orders.length === 0) {
+    el.innerHTML = `<div class="dc-empty"><p>${isInProgress ? 'Нет заказов в работе' : 'Все заказы распределены'}</p></div>`;
     return;
   }
 
-  el.innerHTML = pending.map(o => {
+  el.innerHTML = orders.map(o => {
     const bottles = [];
-    if (o.qty6 > 0) bottles.push(`${o.qty6}×6Л`);
-    if (o.qty16 > 0) bottles.push(`${o.qty16}×16Л`);
+    if (o.qty6  > 0) bottles.push(`${o.qty6}×6Л`);
+    if (o.qty16 > 0) bottles.push(`${o.qty16}×19Л`);
     const time = new Date(o.createdAt).toLocaleTimeString('ru-RU', { hour:'2-digit', minute:'2-digit' });
+    const mapsLink = `https://maps.google.com/?q=${encodeURIComponent(o.address)}`;
 
-    const driverButtons = o.assignedDriver
-      ? `<div class="dc-assigned">✅ ${o.assignedDriver}
-           <button class="dc-unassign" onclick="unassignOrder('${o.id}')">✕ Отменить</button>
-         </div>`
+    const actions = isInProgress
+      ? `<div class="dc-inprog">
+          <span class="dc-drv-name">🚗 ${o.assignedDriver || 'В пути'}</span>
+          <div class="dc-inprog-btns">
+            <button class="dc-change-btn" onclick="showChangeDriver('${o.id}')">Изменить</button>
+            <button class="dc-cancel-btn" onclick="cancelOrder('${o.id}')">Отменить</button>
+          </div>
+        </div>
+        <div class="dc-change-drivers" id="chg-${o.id}" style="display:none">
+          ${DRIVERS.map(d => `<button class="dc-driver-btn" onclick="assignOrder('${o.id}','${d.name}')">${d.icon} ${d.name}</button>`).join('')}
+        </div>`
       : `<div class="dc-drivers">
           ${DRIVERS.map(d => `
             <button class="dc-driver-btn" onclick="assignOrder('${o.id}','${d.name}')">
@@ -262,19 +281,25 @@ function renderDispatcher(orders) {
             </button>`).join('')}
         </div>`;
 
-    return `<div class="dc-card ${o.assignedDriver ? 'assigned' : ''}" id="dc-${o.id}">
+    return `<div class="dc-card ${isInProgress ? 'in-progress' : ''}" id="dc-${o.id}">
       <div class="dc-top">
         <div class="dc-name">${o.name}</div>
         <div class="dc-time">${time}</div>
       </div>
-      <div class="dc-addr">📍 ${o.address}</div>
+      <div class="dc-addr"><a href="${mapsLink}" target="_blank" style="color:inherit;text-decoration:none">📍 ${o.address}</a></div>
       <div class="dc-row">
         <span class="dc-bottles">💧 ${bottles.join(' + ')}</span>
         <span class="dc-total">${o.total} сом</span>
       </div>
-      ${driverButtons}
+      ${o.notes ? `<div class="dc-notes">💬 ${o.notes}</div>` : ''}
+      ${actions}
     </div>`;
   }).join('');
+}
+
+function showChangeDriver(orderId) {
+  const el = document.getElementById(`chg-${orderId}`);
+  if (el) el.style.display = el.style.display === 'none' ? 'grid' : 'none';
 }
 
 async function assignOrder(orderId, driverName) {
@@ -297,6 +322,117 @@ async function unassignOrder(orderId) {
     });
     await loadData();
   } catch { alert('Ошибка'); }
+}
+
+async function cancelOrder(orderId) {
+  if (!confirm('Отменить этот заказ?')) return;
+  try {
+    await fetch(`/api/orders/${orderId}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ status: 'cancelled' })
+    });
+    await loadData();
+  } catch { alert('Ошибка отмены'); }
+}
+
+// ── Карта диспетчера ──
+function renderDispatchMap(orders) {
+  const withCoords = orders.filter(o => o.lat && o.lng);
+  const wrap = document.getElementById('dispatchMapWrap');
+  if (!wrap) return;
+
+  if (withCoords.length === 0) { wrap.style.display = 'none'; return; }
+  wrap.style.display = 'block';
+
+  if (!dispatchMap) {
+    dispatchMap = L.map('dispatchMap', { attributionControl: false }).setView([40.2833, 69.6333], 14);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19 }).addTo(dispatchMap);
+  }
+
+  dispatchMarkers.forEach(m => m.remove());
+  dispatchMarkers = [];
+
+  withCoords.forEach(o => {
+    const color = o.assignedDriver ? '#f97316' : '#1a78c2';
+    const icon = L.divIcon({
+      className: '',
+      html: `<div style="background:${color};width:14px;height:14px;border-radius:50%;border:2.5px solid #fff;box-shadow:0 2px 8px rgba(0,0,0,.3)"></div>`,
+      iconSize: [14, 14], iconAnchor: [7, 7]
+    });
+    const m = L.marker([o.lat, o.lng], { icon }).addTo(dispatchMap);
+    m.bindPopup(`<b>${o.name}</b><br><span style="font-size:.8rem">${o.address}</span><br><b>${o.total} сом</b>${o.assignedDriver ? `<br>🚗 ${o.assignedDriver}` : ''}`);
+    dispatchMarkers.push(m);
+  });
+
+  if (dispatchMarkers.length > 0) {
+    const group = L.featureGroup(dispatchMarkers);
+    dispatchMap.fitBounds(group.getBounds().pad(0.25));
+  }
+  setTimeout(() => dispatchMap && dispatchMap.invalidateSize(), 50);
+}
+
+// ── Архив ──
+function setArchivePeriod(period, btn) {
+  archivePeriod = period;
+  document.querySelectorAll('.af-btn').forEach(b => b.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+  renderArchive();
+}
+
+function renderArchive() {
+  const driverFilter = document.getElementById('afDriver')?.value || '';
+  const statusFilter = document.getElementById('afStatus')?.value || '';
+
+  const now = new Date();
+  let from = null;
+  if (archivePeriod === 'today') { from = new Date(now); from.setHours(0,0,0,0); }
+  else if (archivePeriod === 'week') { from = new Date(now); from.setDate(now.getDate()-6); from.setHours(0,0,0,0); }
+  else if (archivePeriod === 'month') { from = new Date(now); from.setDate(1); from.setHours(0,0,0,0); }
+
+  let orders = [...allOrders].reverse();
+  if (from) orders = orders.filter(o => new Date(o.createdAt) >= from);
+  if (driverFilter) orders = orders.filter(o => o.assignedDriver === driverFilter);
+  if (statusFilter) orders = orders.filter(o => o.status === statusFilter);
+
+  const revenue = orders.filter(o => o.status === 'delivered').reduce((s, o) => s + o.total, 0);
+  const delivered = orders.filter(o => o.status === 'delivered').length;
+
+  document.getElementById('archiveStats').innerHTML = `
+    <div class="ar-stat"><div class="ars-val">${orders.length}</div><div class="ars-name">Всего заказов</div></div>
+    <div class="ar-stat"><div class="ars-val green">${delivered}</div><div class="ars-name">Доставлено</div></div>
+    <div class="ar-stat"><div class="ars-val blue">${revenue} сом</div><div class="ars-name">Выручка</div></div>
+    <div class="ar-stat"><div class="ars-val">${orders.filter(o=>o.status==='cancelled').length}</div><div class="ars-name">Отменено</div></div>
+  `;
+
+  const statusMap = { new:'🆕 Новый', delivering:'🚚 В пути', delivered:'✅ Доставлен', cancelled:'❌ Отменён' };
+  const statusCls = { new:'s-new', delivering:'s-delivering', delivered:'s-delivered', cancelled:'s-cancelled' };
+
+  const el = document.getElementById('archiveList');
+  if (orders.length === 0) {
+    el.innerHTML = `<div class="empty-msg"><svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><polyline points="21 8 21 21 3 21 3 8"/><rect x="1" y="3" width="22" height="5" rx="1"/></svg><p>Нет заказов за этот период</p></div>`;
+    return;
+  }
+
+  el.innerHTML = orders.map(o => {
+    const bottles = [];
+    if (o.qty6  > 0) bottles.push(`${o.qty6}×6Л`);
+    if (o.qty16 > 0) bottles.push(`${o.qty16}×19Л`);
+    const dt = new Date(o.createdAt).toLocaleDateString('ru-RU', { day:'numeric', month:'short', hour:'2-digit', minute:'2-digit' });
+    const cls = statusCls[o.status] || 's-new';
+    const label = statusMap[o.status] || o.status;
+    return `<div class="order-card ${cls}">
+      <div class="oc-left">
+        <div class="oc-name">${o.name} <span class="oc-phone">${o.phone}</span></div>
+        <div class="oc-addr"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg><span>${o.address}</span></div>
+        <div class="oc-meta">
+          <span class="oc-bottles">💧 ${bottles.join(' + ')}</span>
+          ${o.assignedDriver ? `<span class="oc-driver">🚗 ${o.assignedDriver}</span>` : ''}
+        </div>
+      </div>
+      <div class="oc-right"><span class="sbadge ${cls}">${label}</span><div class="oc-sum">${o.total} сом</div><div class="oc-time">${dt}</div></div>
+    </div>`;
+  }).join('');
 }
 
 // ── Clients stats ──
