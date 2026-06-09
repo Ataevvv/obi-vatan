@@ -688,6 +688,64 @@ nav a:hover{color:#fff}
 .has-new{animation:pulse-new 2s ease-in-out infinite}
 @keyframes pulse-new{0%,100%{box-shadow:0 0 0 0 rgba(217,119,6,.4)}50%{box-shadow:0 0 0 8px rgba(217,119,6,0)}}
 
+/* ── НИЖНЯЯ НАВИГАЦИЯ ── */
+body { padding-bottom: 64px; }
+
+.bottom-nav {
+  position: fixed;
+  bottom: 0; left: 0; right: 0;
+  height: 64px;
+  background: rgba(10, 20, 40, 0.92);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-top: 1px solid rgba(255,255,255,0.1);
+  display: flex;
+  z-index: 200;
+  padding-bottom: env(safe-area-inset-bottom);
+}
+.bn-tab {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: rgba(255,255,255,0.45);
+  font-family: inherit;
+  font-size: .68rem;
+  font-weight: 600;
+  letter-spacing: .02em;
+  transition: color .2s;
+  padding: 0;
+}
+.bn-tab.active {
+  color: #fff;
+}
+.bn-tab.active svg {
+  filter: drop-shadow(0 0 8px rgba(66,165,245,0.7));
+  stroke: #42a5f5;
+}
+.bn-tab svg { transition: all .2s; }
+
+/* ── ОВЕРЛЕЙ ВОДИТЕЛЯ ── */
+#driverSection {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  bottom: 64px;
+  z-index: 100;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+#driverSection .select-screen {
+  min-height: calc(100vh - 64px);
+}
+#driverSection .driver-app {
+  min-height: calc(100vh - 64px);
+}
+
 /* ── АДРЕС + КАРТА ── */
 .addr-group{position:relative}
 .addr-input-row{display:flex;gap:8px}

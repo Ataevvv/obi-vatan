@@ -284,6 +284,4 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 });
 
-// Автовход если уже выбирал
-const saved = localStorage.getItem('driverName');
-if (saved) selectDriver(saved);
+// Автовход запускается через switchAppTab в script.js

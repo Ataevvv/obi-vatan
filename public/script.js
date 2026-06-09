@@ -1,6 +1,33 @@
 // ── Машина анимация — один раз при загрузке ──
 // CSS уже запускает анимацию автоматически, повтор не нужен
 
+// ── Переключение вкладок (Главная / Водитель) ──
+let driverTabInited = false;
+
+function switchAppTab(tab) {
+  const sec = document.getElementById('driverSection');
+  const bc  = document.getElementById('bnClient');
+  const bd  = document.getElementById('bnDriver');
+  if (tab === 'driver') {
+    sec.style.display = 'block';
+    bc.classList.remove('active');
+    bd.classList.add('active');
+    if (!driverTabInited) {
+      driverTabInited = true;
+      const saved = localStorage.getItem('driverName');
+      if (saved) selectDriver(saved);
+    }
+  } else {
+    sec.style.display = 'none';
+    bc.classList.add('active');
+    bd.classList.remove('active');
+    if (typeof refreshTimer !== 'undefined' && refreshTimer) {
+      clearInterval(refreshTimer);
+      refreshTimer = null;
+    }
+  }
+}
+
 // ── PWA Service Worker ──
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
