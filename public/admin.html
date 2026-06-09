@@ -320,6 +320,7 @@
         <button class="dr-change" onclick="changeDriver()">Сменить</button>
       </div>
     </header>
+    <div id="drDebugBar" style="background:#fff3cd;font-size:.72rem;padding:5px 14px;color:#856404;border-bottom:1px solid #ffc107;min-height:22px"></div>
     <div class="dr-main" id="drMain">
       <div class="dr-loading">Загрузка...</div>
     </div>
@@ -327,8 +328,8 @@
 
 </div>
 
-<script src="driver.js?v=11"></script>
-<script src="admin.js?v=11"></script>
+<script src="driver.js?v=12"></script>
+<script src="admin.js?v=12"></script>
 <script>
   if ('serviceWorker' in navigator) {
     navigator.serviceWorker.register('/sw.js').then(reg => {

@@ -135,6 +135,7 @@ function changeDriver() {
 async function loadOrders() {
   if (!currentDriver) return;
   const el = document.getElementById('drMain');
+  const dbg = document.getElementById('drDebugBar');
   try {
     const res = await fetch('/api/orders');
     if (!res.ok) throw new Error('HTTP ' + res.status);
@@ -150,6 +151,11 @@ async function loadOrders() {
       o.status === 'delivered'
     );
 
+    if (dbg) {
+      const assignedToMe = all.filter(o => o.assignedDriver === currentDriver);
+      dbg.textContent = `Вход: ${currentDriver} | В базе: ${all.length} заказов | Назначено мне: ${assignedToMe.length} | Активных: ${mine.length}`;
+    }
+
     renderHistory(done);
 
     const newOnes = mine.filter(o => !knownOrderIds.has(o.id));
@@ -158,6 +164,7 @@ async function loadOrders() {
 
     renderDriverOrders(mine);
   } catch (e) {
+    if (dbg) dbg.textContent = `Ошибка: ${e.message}`;
     el.innerHTML = `<div class="dr-loading" style="color:#f59e0b">
       ⏳ Сервер запускается...<br>
       <span style="font-size:.78rem;opacity:.7">Подождите 30–60 секунд</span>
