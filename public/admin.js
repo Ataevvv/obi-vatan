@@ -13,12 +13,30 @@ const DRIVERS = [
 // ── Auth ──
 function selectRole(role) {
   if (role === 'driver') {
-    window.location.href = '/?tab=driver';
+    document.getElementById('loginScreen').style.display = 'none';
+    document.getElementById('driverSection').style.display = 'block';
+    const saved = localStorage.getItem('driverName');
+    if (saved) selectDriver(saved);
   } else {
     document.getElementById('roleSelect').style.display = 'none';
     document.getElementById('adminLoginForm').style.display = 'block';
     setTimeout(() => document.getElementById('pwInput').focus(), 80);
   }
+}
+
+function exitToRoles() {
+  clearInterval(refreshTimer);
+  refreshTimer = null;
+  currentDriver = null;
+  knownOrderIds = new Set();
+  document.getElementById('driverSection').style.display = 'none';
+  document.getElementById('selectScreen').style.display = 'flex';
+  document.getElementById('driverApp').style.display = 'none';
+  document.getElementById('driverBtns').style.display = 'flex';
+  document.getElementById('pinSection').style.display = 'none';
+  document.getElementById('loginScreen').style.display = 'flex';
+  document.getElementById('roleSelect').style.display = 'block';
+  document.getElementById('adminLoginForm').style.display = 'none';
 }
 
 function backToRoles() {

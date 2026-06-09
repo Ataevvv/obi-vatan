@@ -12,6 +12,7 @@
   <meta name="apple-mobile-web-app-title" content="ОВ Админ"/>
   <link rel="apple-touch-icon" href="/icon-admin.svg"/>
   <link rel="stylesheet" href="admin.css"/>
+  <link rel="stylesheet" href="driver.css"/>
   <script src="https://api-maps.yandex.ru/2.1/?apikey=4d011077-ba4f-45c4-a851-7a2e1b3c0cb4&lang=ru_RU" type="text/javascript"></script>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
 </head>
@@ -273,6 +274,54 @@
   </main>
 </div>
 
+<!-- РАЗДЕЛ ВОДИТЕЛЯ -->
+<div id="driverSection" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;z-index:300;overflow-y:auto">
+
+  <div class="select-screen" id="selectScreen">
+    <div class="select-card">
+      <img src="logo.png" alt="Оби Ватан" class="sel-logo"/>
+      <h2>Панель водителя</h2>
+      <p>Выберите имя и введите PIN</p>
+      <div class="driver-btns" id="driverBtns">
+        <button onclick="pickDriver('Алишер', this)">🚗 Алишер</button>
+        <button onclick="pickDriver('Бахром', this)">🚙 Бахром</button>
+        <button onclick="pickDriver('Санжар', this)">🛻 Санжар</button>
+        <button onclick="pickDriver('Достон', this)">🚐 Достон</button>
+      </div>
+      <div class="pin-section" id="pinSection" style="display:none">
+        <div class="pin-label" id="pinLabel"></div>
+        <input class="pin-input" id="pinInput" type="password" inputmode="numeric" maxlength="4" placeholder="• • • •" autocomplete="off"/>
+        <div class="pin-error" id="pinError"></div>
+        <div class="pin-actions">
+          <button class="btn-pin-back" onclick="backToSelect()">← Назад</button>
+          <button class="btn-pin-ok" onclick="checkPin()">Войти</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="driver-app" id="driverApp" style="display:none">
+    <header class="dr-header">
+      <div class="dr-header-left">
+        <img src="logo.png" alt="" class="dr-logo"/>
+        <div>
+          <div class="dr-name" id="driverName"></div>
+          <div class="dr-status"><span class="dr-dot"></span>Онлайн</div>
+        </div>
+      </div>
+      <div style="display:flex;gap:8px">
+        <button class="dr-change" onclick="exitToRoles()">← Выйти</button>
+        <button class="dr-change" onclick="changeDriver()">Сменить</button>
+      </div>
+    </header>
+    <div class="dr-main" id="drMain">
+      <div class="dr-loading">Загрузка...</div>
+    </div>
+  </div>
+
+</div>
+
+<script src="driver.js"></script>
 <script src="admin.js"></script>
 <script>
   if ('serviceWorker' in navigator) {

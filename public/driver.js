@@ -10,6 +10,7 @@ let currentDriver = null;
 let pendingDriver = null;
 let knownOrderIds = new Set();
 let refreshTimer = null;
+let lastRenderedIds = '';
 
 // Звук уведомления
 let audioCtx = null;
@@ -169,8 +170,10 @@ async function loadOrders() {
 
 function renderOrders(orders) {
   const el = document.getElementById('drMain');
+  const newIds = orders.map(o => o.id).join(',');
 
   if (orders.length === 0) {
+    lastRenderedIds = '';
     el.innerHTML = `
       <div class="dr-empty">
         <div class="dr-empty-icon">✅</div>
@@ -179,6 +182,9 @@ function renderOrders(orders) {
       </div>`;
     return;
   }
+
+  if (newIds === lastRenderedIds) return;
+  lastRenderedIds = newIds;
 
   el.innerHTML = orders.map(o => {
     const bottles = [];
@@ -212,6 +218,8 @@ function renderOrders(orders) {
 
       <div class="do-total">${o.total} сомон</div>
 
+      ${o.lat && o.lng ? `<div class="do-map-wrap" id="orderMapWrap-${o.id}"><div id="orderMap-${o.id}" class="do-map"></div></div>` : ''}
+
       <div class="do-actions">
         <a href="tel:${o.phone}" class="btn-call">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12 19.79 19.79 0 0 1 1.61 3.35 2 2 0 0 1 3.6 1h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 8.63a16 16 0 0 0 5.86 5.86l.91-.91a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
@@ -224,6 +232,27 @@ function renderOrders(orders) {
       </div>
     </div>`;
   }).join('');
+
+  initOrderMaps(orders);
+}
+
+function initOrderMaps(orders) {
+  if (typeof ymaps === 'undefined') return;
+  ymaps.ready(function () {
+    orders.filter(function (o) { return o.lat && o.lng; }).forEach(function (o) {
+      const el = document.getElementById('orderMap-' + o.id);
+      if (!el || el.dataset.init) return;
+      el.dataset.init = '1';
+      const map = new ymaps.Map(el, {
+        center: [o.lat, o.lng],
+        zoom: 16,
+        controls: []
+      }, { suppressMapOpenBlock: true });
+      map.behaviors.disable(['scrollZoom', 'drag']);
+      const pin = new ymaps.Placemark([o.lat, o.lng], {}, { preset: 'islands#redIcon' });
+      map.geoObjects.add(pin);
+    });
+  });
 }
 
 function renderHistory(done) {

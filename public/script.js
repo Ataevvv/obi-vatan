@@ -1,33 +1,3 @@
-// ── Машина анимация — один раз при загрузке ──
-// CSS уже запускает анимацию автоматически, повтор не нужен
-
-// ── Переключение вкладок (Главная / Водитель) ──
-let driverTabInited = false;
-
-function switchAppTab(tab) {
-  const sec = document.getElementById('driverSection');
-  const bc  = document.getElementById('bnClient');
-  const bd  = document.getElementById('bnDriver');
-  if (tab === 'driver') {
-    sec.style.display = 'block';
-    bc.classList.remove('active');
-    bd.classList.add('active');
-    if (!driverTabInited) {
-      driverTabInited = true;
-      const saved = localStorage.getItem('driverName');
-      if (saved) selectDriver(saved);
-    }
-  } else {
-    sec.style.display = 'none';
-    bc.classList.add('active');
-    bd.classList.remove('active');
-    if (typeof refreshTimer !== 'undefined' && refreshTimer) {
-      clearInterval(refreshTimer);
-      refreshTimer = null;
-    }
-  }
-}
-
 // ── PWA Service Worker ──
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
@@ -166,7 +136,17 @@ function placeAddrMark(coords, reverse) {
   } else {
     ymapMark = new ymaps.Placemark(coords, {}, {
       draggable: true,
-      preset: 'islands#blueCircleDotIcon'
+      iconLayout: ymaps.templateLayoutFactory.createClass(
+        '<div style="position:relative;display:flex;flex-direction:column;align-items:center;cursor:grab">' +
+        '<div style="width:32px;height:32px;background:#1a78c2;border-radius:50%;border:3px solid #fff;box-shadow:0 3px 16px rgba(26,120,194,.65);display:flex;align-items:center;justify-content:center">' +
+        '<div style="width:10px;height:10px;background:#fff;border-radius:50%"></div>' +
+        '</div>' +
+        '<div style="width:3px;height:10px;background:#1a78c2;border-radius:0 0 2px 2px;margin-top:-1px"></div>' +
+        '<div style="width:0;height:0;border-left:6px solid transparent;border-right:6px solid transparent;border-top:8px solid #1a78c2;margin-top:-1px"></div>' +
+        '</div>'
+      ),
+      iconShape: { type: 'Circle', coordinates: [16, 16], radius: 16 },
+      iconOffset: [-16, -50]
     });
     ymap.geoObjects.add(ymapMark);
     ymapMark.events.add('dragend', function () {
