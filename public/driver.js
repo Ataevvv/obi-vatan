@@ -10,7 +10,6 @@ let currentDriver = null;
 let pendingDriver = null;
 let knownOrderIds = new Set();
 let refreshTimer = null;
-let lastRenderedIds = '';
 
 // Звук уведомления
 let audioCtx = null;
@@ -141,18 +140,14 @@ async function loadOrders() {
     if (!res.ok) throw new Error('HTTP ' + res.status);
     const all = await res.json();
 
-    // Показываем заказы за последние 24 часа, не только сегодня
-    const cutoff = Date.now() - 24 * 60 * 60 * 1000;
     const mine = all.filter(o =>
       o.assignedDriver === currentDriver &&
-      (o.status === 'new' || o.status === 'delivering') &&
-      new Date(o.createdAt).getTime() > cutoff
+      (o.status === 'new' || o.status === 'delivering')
     );
 
     const done = all.filter(o =>
       o.assignedDriver === currentDriver &&
-      o.status === 'delivered' &&
-      new Date(o.createdAt).getTime() > cutoff
+      o.status === 'delivered'
     );
 
     renderHistory(done);
@@ -172,10 +167,8 @@ async function loadOrders() {
 
 function renderOrders(orders) {
   const el = document.getElementById('drMain');
-  const newIds = orders.map(o => o.id).join(',');
 
   if (orders.length === 0) {
-    lastRenderedIds = '';
     el.innerHTML = `
       <div class="dr-empty">
         <div class="dr-empty-icon">✅</div>
@@ -184,9 +177,6 @@ function renderOrders(orders) {
       </div>`;
     return;
   }
-
-  if (newIds === lastRenderedIds) return;
-  lastRenderedIds = newIds;
 
   el.innerHTML = orders.map(o => {
     const bottles = [];
